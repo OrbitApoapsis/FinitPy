@@ -189,6 +189,10 @@ class FiniyPyMain(tk.Frame):
 		self.message_area.tag_bind("hyper+italics", "<Enter>", self._enter_link)
 		self.message_area.tag_bind("hyper+italics", "<Leave>", self._leave_link)
 		self.message_area.tag_bind("hyper+italics", "<Button-1>", self._click_link)
+		self.message_area.tag_config("spoiler", font=('Courier', 10,), foreground='black', background='black')
+		self.message_area.tag_config("spoiler-visible", font=('Courier', 10,), foreground='white', background='black')
+		self.message_area.tag_bind("spoiler", "<Enter>", self._enter_spoiler)
+		self.message_area.tag_bind("spoiler-visible", "<Leave>", self._leave_spoiler)
 		self.message_area.config(state=tk.DISABLED)
 		
 		self.join_lbl = tk.Label(self, text="Users")
@@ -214,7 +218,7 @@ class FiniyPyMain(tk.Frame):
 	def _enter_link(self, event):
 		self.message_area.config(cursor="hand2")
 	def _leave_link(self, event):
-		self.message_area.config(cursor="")
+		self.message_area.config(cursor="xterm")
 	def _click_link(self, event):
 		w = event.widget
 		x, y = event.x, event.y
@@ -224,6 +228,22 @@ class FiniyPyMain(tk.Frame):
 				self.conn.join(tags[1])
 		else:
 			webbrowser.open(tags[1])
+	def _enter_spoiler(self, event):
+		w = event.widget
+		x, y = event.x, event.y
+		line = w.index("current").split(".")[0]
+		text = w.get(line+".0", line+".end")
+		start = str(re.search("\[spoiler\]", text).end()+1)
+		self.message_area.tag_remove("spoiler", line+"."+start, line+".end")
+		self.message_area.tag_add("spoiler-visible", line+"."+start, line+".end")
+	def _leave_spoiler(self, event):
+		w = event.widget
+		x, y = event.x, event.y
+		line = w.index("current").split(".")[0]
+		text = w.get(line+".0", line+".end")
+		start = str(re.search("\[spoiler\]", text).end()+1)
+		self.message_area.tag_remove("spoiler-visible", line+"."+start, line+".end")
+		self.message_area.tag_add("spoiler", line+"."+start, line+".end")
 	def poll(self):
 		if self.channel_list.size() == 0:
 			self.active_channel = ""
@@ -434,9 +454,13 @@ class FiniyPyMain(tk.Frame):
 			prev_name = username
 		if active_index >= 0:
 			self.user_list.activate(active_index)
-	def _generate_links(self, body, italics=False):
+	def _generate_links(self, body, italics=False, spoiler=False):
 		hyper = "hyper+italics" if italics else "hyper+normal"
 		style = "italics" if italics else "normal"
+		tsp = tuple()
+		if spoiler:
+			tsp = ("spoiler",)
+			style = (style, "spoiler")
 		while len(body):
 			s = re.search("(^|\W)[rcv/#h]", body, re.I)
 			if not s:
@@ -447,7 +471,7 @@ class FiniyPyMain(tk.Frame):
 				body = body[s.start()+1:]
 			m = re.match("#[a-z0-1]+", body, re.I)
 			if m:
-				self.message_area.insert(tk.END, m.group(), (hyper, m.group()))
+				self.message_area.insert(tk.END, m.group(), (hyper, m.group())+tsp)
 				body = body[m.end():]
 				continue
 			m = re.match("/?[rv]/[a-z]+", body, re.I)
@@ -456,7 +480,7 @@ class FiniyPyMain(tk.Frame):
 				if l[0] != "/": l = "/" + l
 				if l[1] == "r": l = "https://www.reddit.com" + l
 				else: l = "https://voat.co" + l
-				self.message_area.insert(tk.END, m.group(), (hyper, l))
+				self.message_area.insert(tk.END, m.group(), (hyper, l)+tsp)
 				body = body[m.end():]
 				continue
 			m = re.match("/?c/\d+", body, re.I)
@@ -464,7 +488,7 @@ class FiniyPyMain(tk.Frame):
 				l = m.group()
 				if l[0] != "/": l = "/" + l
 				l = "https://diluted.hoppy.haus" + l
-				self.message_area.insert(tk.END, m.group(), (hyper, l))
+				self.message_area.insert(tk.END, m.group(), (hyper, l)+tsp)
 				body = body[m.end():]
 				continue
 			m = re.match("/?vp/\d+", body, re.I)
@@ -472,12 +496,12 @@ class FiniyPyMain(tk.Frame):
 				l = m.group()
 				if l[0] != "/": l = "/" + l
 				l = "https://diluted.hoppy.haus" + l
-				self.message_area.insert(tk.END, m.group(), (hyper, l))
+				self.message_area.insert(tk.END, m.group(), (hyper, l)+tsp)
 				body = body[m.end():]
 				continue
 			m = re.match("(https?):((//)|(\\\\))+([\w\d:#@%/;$()~_?\+-=\\\.&](#!)?)*", body, re.I)
 			if m:
-				self.message_area.insert(tk.END, m.group(), (hyper, m.group()))
+				self.message_area.insert(tk.END, m.group(), (hyper, m.group())+tsp)
 				body = body[m.end():]
 				continue
 			self.message_area.insert(tk.END, body[:1], style)
@@ -505,6 +529,13 @@ class FiniyPyMain(tk.Frame):
 			self.message_area.insert(tk.END, displaced+"{} * ".format(d), "normal")
 			self.message_area.insert(tk.END, "@"+m["sender"]["username"]+' ', user_style)
 			self._generate_links(m["body"][3:], italics=True)
+			self.message_area.insert(tk.END, "\n", "normal")
+		elif re.match("^/spoiler\s", m["body"], re.I):
+			user_style = user_type + "bold-italics"
+			self.message_area.insert(tk.END, displaced+"{} * ".format(d), "normal")
+			self.message_area.insert(tk.END, "@"+m["sender"]["username"]+' ', user_style)
+			self.message_area.insert(tk.END, "[spoiler]", "normal")
+			self._generate_links(m["body"][8:], spoiler=True)
 			self.message_area.insert(tk.END, "\n", "normal")
 		else:
 			user_style = user_type + "bold"
