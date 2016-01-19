@@ -1,4 +1,3 @@
- * Support for spoilers
  * Unread messages per channel
  * Polls
  * Notifications for received PMs while logged out
