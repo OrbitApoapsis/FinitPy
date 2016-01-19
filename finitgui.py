@@ -474,49 +474,40 @@ class FiniyPyMain(tk.Frame):
 		if active_index >= 0:
 			self.user_list.activate(active_index)
 	def _generate_links(self, body):
+		ps = (
+			("(?<!\w)#[a-z0-9]+", "CHANNEL"),
+			("(?<![\w/])/?([rv]/[a-z0-9]+|c/\\d+|vp/\\d+)", "SHORT"),
+			("(?<!\w)(https?):((//)|(\\\\))+([\w\d:#@%/;$()~_?\+-=\\\.&](#!)?)*", "LINK"),
+			("(?<!\w)([\w][\w\d-]*\.)+[a-z]{2,}(/([\w\d:#@%/;$()~_?\+-=\\\.&](#!)?)*)?", "NPLINK")
+		)
 		while len(body):
-			m = re.match("#[a-z0-9]+", body, re.I)
-			if m:
-				self.message_area.insert(tk.END, m.group(), ("hyper", "channel-"+m.group()))
-				body = body[m.end():]
-				continue
-			m = re.match("/?[rv]/[a-z0-9]+", body, re.I)
-			if m:
-				l = m.group()
-				if l[0] != "/": l = "/" + l
-				if l[1] == "r": l = "https://www.reddit.com" + l
-				else: l = "https://voat.co" + l
-				self.message_area.insert(tk.END, m.group(), ("hyper", "link-"+l))
-				body = body[m.end():]
-				continue
-			m = re.match("/?c/\d+", body, re.I)
-			if m:
-				l = m.group()
-				if l[0] != "/": l = "/" + l
-				l = "https://diluted.hoppy.haus" + l
-				self.message_area.insert(tk.END, m.group(), ("hyper", "link-"+l))
-				body = body[m.end():]
-				continue
-			m = re.match("/?vp/\d+", body, re.I)
-			if m:
-				l = m.group()
-				if l[0] != "/": l = "/" + l
-				l = "https://diluted.hoppy.haus" + l
-				self.message_area.insert(tk.END, m.group(), ("hyper", "link-"+l))
-				body = body[m.end():]
-				continue
-			m = re.match("(https?):((//)|(\\\\))+([\w\d:#@%/;$()~_?\+-=\\\.&](#!)?)*", body, re.I)
-			if m:
-				self.message_area.insert(tk.END, m.group(), ("hyper", "link-"+m.group()))
-				body = body[m.end():]
-				continue
-			m = re.match("([\w][\w\d-]*\.)+[a-z]{2,}(/([\w\d:#@%/;$()~_?\+-=\\\.&](#!)?)*)?", body, re.I)
-			if m:
-				self.message_area.insert(tk.END, m.group(), ("hyper", "link-http://"+m.group()))
-				body = body[m.end():]
-				continue
-			self.message_area.insert(tk.END, body[:1])
-			body = body[1:]
+			l = (float("inf"), None, None)
+			for p in ps:
+				s = re.search(p[0], body, re.I)
+				if s and s.start() < l[0]:
+					l = (s.start(), s.end(), p[1])
+			if l[0] == float("inf"):
+				self.message_area.insert(tk.END, body)
+				break
+			if l[0] > 0:
+				self.message_area.insert(tk.END, body[:l[0]])
+			link = body[l[0]:l[1]]
+			if l[2] == "LINK":
+				self.message_area.insert(tk.END, link, ("hyper", "link-"+link))
+			elif l[2] == "CHANNEL":
+				self.message_area.insert(tk.END, link, ("hyper", "channel-"+link))
+			elif l[2] == "SHORT":
+				text = link
+				ll = link.lower()
+				if link[0] != "/": link = "/" + link
+				if ll[:2] == "/r": link = "https://www.reddit.com" + link
+				elif ll[:2] == "/c" or ll[:3] == "/vp":
+					link = "https://diluted.hoppy.haus" + link
+				elif ll[:2] == "/v": link = "https://voat.co" + link
+				self.message_area.insert(tk.END, text, ("hyper", "link-"+link))
+			elif l[2] == "NPLINK":
+				self.message_area.insert(tk.END, link, ("hyper", "link-http://"+link))
+			body = body[l[1]:]
 	def _add_message(self, m):
 		if len(m["created_at"]) <= 5:
 			d = m["created_at"]
