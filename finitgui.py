@@ -470,12 +470,12 @@ class FiniyPyMain(tk.Frame):
 			if s.start() > 0:
 				self.message_area.insert(tk.END, body[:s.start()+1], style)
 				body = body[s.start()+1:]
-			m = re.match("#[a-z0-1]+", body, re.I)
+			m = re.match("#[a-z0-9]+", body, re.I)
 			if m:
 				self.message_area.insert(tk.END, m.group(), (hyper, m.group())+tsp)
 				body = body[m.end():]
 				continue
-			m = re.match("/?[rv]/[a-z]+", body, re.I)
+			m = re.match("/?[rv]/[a-z0-9]+", body, re.I)
 			if m:
 				l = m.group()
 				if l[0] != "/": l = "/" + l
