@@ -175,9 +175,14 @@ class FiniyPyMain(tk.Frame):
 		self.message_area.tag_configure('italics', font=('Courier', 10, 'italic',))
 		self.message_area.tag_configure('bold', font=('Courier', 10, 'bold',))
 		self.message_area.tag_configure('bold-italics', font=('Courier', 10, 'bold italic',))
+		self.message_area.tag_configure('user')
 		self.message_area.tag_configure('admin', foreground='red')
 		self.message_area.tag_configure('mod', foreground='blue')
 		self.message_area.tag_configure('op', foreground='lime green')
+		for i in ["admin","mod","op", "user"]:
+			self.message_area.tag_bind(i, "<Button-1>", self._click_user)
+			self.message_area.tag_bind(i, "<Enter>", self._enter_link)
+			self.message_area.tag_bind(i, "<Leave>", self._leave_link)
 		self.message_area.tag_config("hyper", underline=1)
 		self.message_area.tag_bind("hyper", "<Enter>", self._enter_link)
 		self.message_area.tag_bind("hyper", "<Leave>", self._leave_link)
@@ -212,6 +217,13 @@ class FiniyPyMain(tk.Frame):
 		self.message_area.config(cursor="hand2")
 	def _leave_link(self, event):
 		self.message_area.config(cursor="xterm")
+	def _click_user(self, event):
+		tags = event.widget.tag_names("current")
+		for t in tags:
+			if t.startswith("user-"):
+				self.message.insert(tk.INSERT, t[5:]+" ")
+				self.message.focus_set()
+				return
 	def _click_link(self, event):
 		w = event.widget
 		x, y = event.x, event.y
@@ -219,7 +231,7 @@ class FiniyPyMain(tk.Frame):
 		for t in tags:
 			if t.startswith("link-"):
 				webbrowser.open(t[5:])
-				break
+				return
 			elif t.startswith("channel-"):
 				chn = t[8:].lower()
 				if chn not in self.rooms:
@@ -234,7 +246,7 @@ class FiniyPyMain(tk.Frame):
 					self.channel_list.selection_clear(0, tk.END)
 					self.channel_list.selection_set(idx)
 					self.channel_list.activate(idx)
-				break
+				return
 	def _enter_spoiler(self, event):
 		w = event.widget
 		x, y = event.x, event.y
@@ -511,7 +523,7 @@ class FiniyPyMain(tk.Frame):
 		else:
 			d = utc2local(datetime.strptime(m["created_at"], "%Y-%m-%d %H:%M:%S"))
 			d = ("00"+str(d.hour))[-2:] + ":" + ("00"+str(d.minute))[-2:]
-		user_type = ""
+		user_type = "user"
 		if m["sender"]["id"] == 1:
 			user_type = "admin"
 		elif m["sender"]["username"] == self.conn.user_data["user"]["username"]:
@@ -524,20 +536,22 @@ class FiniyPyMain(tk.Frame):
 		displacement = int(disp) - len(m["sender"]["username"])
 		displaced = ' ' * displacement
 		if re.match("^/me\s", m["body"], re.I):
-			user_style = (user_type, "bold-italics")
+			user_style = (user_type, "bold-italics", "user-@"+m["sender"]["username"])
 			line = self.message_area.index("insert").split(".")[0]
 			self.message_area.insert(tk.END, displaced+"{} * ".format(d))
-			self.message_area.insert(tk.END, "@"+m["sender"]["username"]+' ', user_style)
+			self.message_area.insert(tk.END, "@"+m["sender"]["username"], user_style)
+			self.message_area.insert(tk.END, " ", "bold-italics")
 			me_start = self.message_area.index("insert")
 			self._generate_links(m["body"][3:])
 			self.message_area.insert(tk.END, "\n")
 			self.message_area.tag_add("italics", line+".0", line+".end")
 			self.message_area.tag_add("normal", line+".0", line+".end")
 		elif re.match("^/spoiler\s", m["body"], re.I):
-			user_style = (user_type, "bold")
+			user_style = (user_type, "bold", "user-@"+m["sender"]["username"])
 			line = self.message_area.index("insert").split(".")[0]
-			self.message_area.insert(tk.END, d+" ")
-			self.message_area.insert(tk.END, displaced+"@"+m["sender"]["username"]+": ", user_style)
+			self.message_area.insert(tk.END, d+" "+displaced)
+			self.message_area.insert(tk.END, "@"+m["sender"]["username"]+":", user_style)
+			self.message_area.insert(tk.END, " ", "bold")
 			self.message_area.insert(tk.END, "[spoiler] ")
 			spoiler_start = self.message_area.index("insert")
 			self._generate_links(m["body"][9:])
@@ -545,10 +559,11 @@ class FiniyPyMain(tk.Frame):
 			self.message_area.tag_add("spoiler", spoiler_start, line+".end")
 			self.message_area.tag_add("normal", line+".0", line+".end")
 		else:
-			user_style = (user_type, "bold")
+			user_style = (user_type, "bold", "user-@"+m["sender"]["username"])
 			line = self.message_area.index("insert").split(".")[0]
-			self.message_area.insert(tk.END, d+" ")
-			self.message_area.insert(tk.END, displaced+"@"+m["sender"]["username"]+": ", user_style)
+			self.message_area.insert(tk.END, d+" "+displaced)
+			self.message_area.insert(tk.END, "@"+m["sender"]["username"]+":", user_style)
+			self.message_area.insert(tk.END, " ", "bold")
 			self._generate_links(m["body"])
 			self.message_area.insert(tk.END, "\n")
 			self.message_area.tag_add("normal", line+".0", line+".end")
