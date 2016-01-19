@@ -223,11 +223,12 @@ class FiniyPyMain(tk.Frame):
 		w = event.widget
 		x, y = event.x, event.y
 		tags = w.tag_names("@%d,%d" % (x, y))
-		if tags[1][0] == "#":
-			if tags[1] not in self.rooms:
-				self.conn.join(tags[1])
+		link = tags[1] if len(tags) == 2 else tags[2]
+		if link[0] == "#":
+			if link not in self.rooms:
+				self.conn.join(link)
 		else:
-			webbrowser.open(tags[1])
+			webbrowser.open(link)
 	def _enter_spoiler(self, event):
 		w = event.widget
 		x, y = event.x, event.y
