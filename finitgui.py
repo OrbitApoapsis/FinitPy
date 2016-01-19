@@ -510,7 +510,7 @@ class FiniyPyMain(tk.Frame):
 				self.message_area.insert(tk.END, m.group(), ("hyper", "link-"+m.group()))
 				body = body[m.end():]
 				continue
-			m = re.match("([\w][\w\d-]*\.)+[\w]{2,}(/([\w\d:#@%/;$()~_?\+-=\\\.&](#!)?)*)?", body, re.I)
+			m = re.match("([\w][\w\d-]*\.)+[a-z]{2,}(/([\w\d:#@%/;$()~_?\+-=\\\.&](#!)?)*)?", body, re.I)
 			if m:
 				self.message_area.insert(tk.END, m.group(), ("hyper", "link-http://"+m.group()))
 				body = body[m.end():]
