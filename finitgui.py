@@ -175,20 +175,13 @@ class FiniyPyMain(tk.Frame):
 		self.message_area.tag_configure('italics', font=('Courier', 10, 'italic',))
 		self.message_area.tag_configure('bold', font=('Courier', 10, 'bold',))
 		self.message_area.tag_configure('bold-italics', font=('Courier', 10, 'bold italic',))
-		self.message_area.tag_configure('admin-bold', font=('Courier', 10, 'bold',), foreground='red')
-		self.message_area.tag_configure('admin-bold-italics', font=('Courier', 10, 'bold italic',), foreground='red')
-		self.message_area.tag_configure('mod-bold', font=('Courier', 10, 'bold',), foreground='blue')
-		self.message_area.tag_configure('mod-bold-italics', font=('Courier', 10, 'bold italic',), foreground='blue')
-		self.message_area.tag_configure('op-bold', font=('Courier', 10, 'bold',), foreground='lime green')
-		self.message_area.tag_configure('op-bold-italics', font=('Courier', 10, 'bold italic',), foreground='lime green')
-		self.message_area.tag_config("hyper+normal", font=('Courier', 10, 'underline'))
-		self.message_area.tag_config("hyper+italics", font=('Courier', 10, 'italic underline',))
-		self.message_area.tag_bind("hyper+normal", "<Enter>", self._enter_link)
-		self.message_area.tag_bind("hyper+normal", "<Leave>", self._leave_link)
-		self.message_area.tag_bind("hyper+normal", "<Button-1>", self._click_link)
-		self.message_area.tag_bind("hyper+italics", "<Enter>", self._enter_link)
-		self.message_area.tag_bind("hyper+italics", "<Leave>", self._leave_link)
-		self.message_area.tag_bind("hyper+italics", "<Button-1>", self._click_link)
+		self.message_area.tag_configure('admin', foreground='red')
+		self.message_area.tag_configure('mod', foreground='blue')
+		self.message_area.tag_configure('op', foreground='lime green')
+		self.message_area.tag_config("hyper", underline=1)
+		self.message_area.tag_bind("hyper", "<Enter>", self._enter_link)
+		self.message_area.tag_bind("hyper", "<Leave>", self._leave_link)
+		self.message_area.tag_bind("hyper", "<Button-1>", self._click_link)
 		self.message_area.tag_config("spoiler", font=('Courier', 10,), foreground='black', background='black')
 		self.message_area.tag_config("spoiler-visible", font=('Courier', 10,), foreground='white', background='black')
 		self.message_area.tag_bind("spoiler", "<Enter>", self._enter_spoiler)
@@ -223,28 +216,41 @@ class FiniyPyMain(tk.Frame):
 		w = event.widget
 		x, y = event.x, event.y
 		tags = w.tag_names("@%d,%d" % (x, y))
-		link = tags[1] if len(tags) == 2 else tags[2]
-		if link[0] == "#":
-			if link not in self.rooms:
-				self.conn.join(link)
-		else:
-			webbrowser.open(link)
+		for t in tags:
+			if t.startswith("link-"):
+				webbrowser.open(t[5:])
+				break
+			elif t.startswith("channel-"):
+				chn = t[8:].lower()
+				if chn not in self.rooms:
+					self.conn.join(chn)
+				else:
+					idx = -1
+					for i in range(self.channel_list.size()):
+						if self.channel_list.get(i) == chn:
+							idx = i
+							break
+					if idx < 0: return
+					self.channel_list.selection_clear(0, tk.END)
+					self.channel_list.selection_set(idx)
+					self.channel_list.activate(idx)
+				break
 	def _enter_spoiler(self, event):
 		w = event.widget
 		x, y = event.x, event.y
 		line = w.index("current").split(".")[0]
 		text = w.get(line+".0", line+".end")
 		start = str(re.search("\[spoiler\]", text).end()+1)
-		self.message_area.tag_remove("spoiler", line+"."+start, line+".end")
 		self.message_area.tag_add("spoiler-visible", line+"."+start, line+".end")
+		self.message_area.tag_remove("spoiler", line+"."+start, line+".end")
 	def _leave_spoiler(self, event):
 		w = event.widget
 		x, y = event.x, event.y
 		line = w.index("current").split(".")[0]
 		text = w.get(line+".0", line+".end")
 		start = str(re.search("\[spoiler\]", text).end()+1)
-		self.message_area.tag_remove("spoiler-visible", line+"."+start, line+".end")
 		self.message_area.tag_add("spoiler", line+"."+start, line+".end")
+		self.message_area.tag_remove("spoiler-visible", line+"."+start, line+".end")
 	def poll(self):
 		if self.channel_list.size() == 0:
 			self.active_channel = ""
@@ -455,24 +461,11 @@ class FiniyPyMain(tk.Frame):
 			prev_name = username
 		if active_index >= 0:
 			self.user_list.activate(active_index)
-	def _generate_links(self, body, italics=False, spoiler=False):
-		hyper = "hyper+italics" if italics else "hyper+normal"
-		style = "italics" if italics else "normal"
-		tsp = tuple()
-		if spoiler:
-			tsp = ("spoiler",)
-			style = (style, "spoiler")
+	def _generate_links(self, body):
 		while len(body):
-			s = re.search("(^|\W)[rcv/#h]", body, re.I)
-			if not s:
-				self.message_area.insert(tk.END, body, style)
-				return
-			if s.start() > 0:
-				self.message_area.insert(tk.END, body[:s.start()+1], style)
-				body = body[s.start()+1:]
 			m = re.match("#[a-z0-9]+", body, re.I)
 			if m:
-				self.message_area.insert(tk.END, m.group(), (hyper, m.group())+tsp)
+				self.message_area.insert(tk.END, m.group(), ("hyper", "channel-"+m.group()))
 				body = body[m.end():]
 				continue
 			m = re.match("/?[rv]/[a-z0-9]+", body, re.I)
@@ -481,7 +474,7 @@ class FiniyPyMain(tk.Frame):
 				if l[0] != "/": l = "/" + l
 				if l[1] == "r": l = "https://www.reddit.com" + l
 				else: l = "https://voat.co" + l
-				self.message_area.insert(tk.END, m.group(), (hyper, l)+tsp)
+				self.message_area.insert(tk.END, m.group(), ("hyper", "link-"+l))
 				body = body[m.end():]
 				continue
 			m = re.match("/?c/\d+", body, re.I)
@@ -489,7 +482,7 @@ class FiniyPyMain(tk.Frame):
 				l = m.group()
 				if l[0] != "/": l = "/" + l
 				l = "https://diluted.hoppy.haus" + l
-				self.message_area.insert(tk.END, m.group(), (hyper, l)+tsp)
+				self.message_area.insert(tk.END, m.group(), ("hyper", "link-"+l))
 				body = body[m.end():]
 				continue
 			m = re.match("/?vp/\d+", body, re.I)
@@ -497,15 +490,20 @@ class FiniyPyMain(tk.Frame):
 				l = m.group()
 				if l[0] != "/": l = "/" + l
 				l = "https://diluted.hoppy.haus" + l
-				self.message_area.insert(tk.END, m.group(), (hyper, l)+tsp)
+				self.message_area.insert(tk.END, m.group(), ("hyper", "link-"+l))
 				body = body[m.end():]
 				continue
 			m = re.match("(https?):((//)|(\\\\))+([\w\d:#@%/;$()~_?\+-=\\\.&](#!)?)*", body, re.I)
 			if m:
-				self.message_area.insert(tk.END, m.group(), (hyper, m.group())+tsp)
+				self.message_area.insert(tk.END, m.group(), ("hyper", "link-"+m.group()))
 				body = body[m.end():]
 				continue
-			self.message_area.insert(tk.END, body[:1], style)
+			m = re.match("([\w][\w\d-]*\.)+[\w]{2,}(/([\w\d:#@%/;$()~_?\+-=\\\.&](#!)?)*)?", body, re.I)
+			if m:
+				self.message_area.insert(tk.END, m.group(), ("hyper", "link-http://"+m.group()))
+				body = body[m.end():]
+				continue
+			self.message_area.insert(tk.END, body[:1])
 			body = body[1:]
 	def _add_message(self, m):
 		if len(m["created_at"]) <= 5:
@@ -515,35 +513,45 @@ class FiniyPyMain(tk.Frame):
 			d = ("00"+str(d.hour))[-2:] + ":" + ("00"+str(d.minute))[-2:]
 		user_type = ""
 		if m["sender"]["id"] == 1:
-			user_type = "admin-"
+			user_type = "admin"
 		elif m["sender"]["username"] == self.conn.user_data["user"]["username"]:
-			user_type = "op-"
+			user_type = "op"
 		else:
 			for p in m["sender"]["mod_powers"]:
 				if self.conn.get_channel_name(p).upper() == self.active_channel.upper():
-					user_type = "mod-"
+					user_type = "mod"
 					break
 		displacement = int(disp) - len(m["sender"]["username"])
 		displaced = ' ' * displacement
 		if re.match("^/me\s", m["body"], re.I):
-			user_style = user_type + "bold-italics"
-			self.message_area.insert(tk.END, displaced+"{} * ".format(d), "normal")
+			user_style = (user_type, "bold-italics")
+			line = self.message_area.index("insert").split(".")[0]
+			self.message_area.insert(tk.END, displaced+"{} * ".format(d))
 			self.message_area.insert(tk.END, "@"+m["sender"]["username"]+' ', user_style)
-			self._generate_links(m["body"][3:], italics=True)
-			self.message_area.insert(tk.END, "\n", "normal")
+			me_start = self.message_area.index("insert")
+			self._generate_links(m["body"][3:])
+			self.message_area.insert(tk.END, "\n")
+			self.message_area.tag_add("italics", line+".0", line+".end")
+			self.message_area.tag_add("normal", line+".0", line+".end")
 		elif re.match("^/spoiler\s", m["body"], re.I):
-			user_style = user_type + "bold-italics"
-			self.message_area.insert(tk.END, displaced+"{} * ".format(d), "normal")
-			self.message_area.insert(tk.END, "@"+m["sender"]["username"]+' ', user_style)
-			self.message_area.insert(tk.END, "[spoiler]", "normal")
-			self._generate_links(m["body"][8:], spoiler=True)
-			self.message_area.insert(tk.END, "\n", "normal")
+			user_style = (user_type, "bold")
+			line = self.message_area.index("insert").split(".")[0]
+			self.message_area.insert(tk.END, d+" ")
+			self.message_area.insert(tk.END, displaced+"@"+m["sender"]["username"]+": ", user_style)
+			self.message_area.insert(tk.END, "[spoiler] ")
+			spoiler_start = self.message_area.index("insert")
+			self._generate_links(m["body"][9:])
+			self.message_area.insert(tk.END, "\n")
+			self.message_area.tag_add("spoiler", spoiler_start, line+".end")
+			self.message_area.tag_add("normal", line+".0", line+".end")
 		else:
-			user_style = user_type + "bold"
-			self.message_area.insert(tk.END, d+" ", "normal")
+			user_style = (user_type, "bold")
+			line = self.message_area.index("insert").split(".")[0]
+			self.message_area.insert(tk.END, d+" ")
 			self.message_area.insert(tk.END, displaced+"@"+m["sender"]["username"]+": ", user_style)
 			self._generate_links(m["body"])
-			self.message_area.insert(tk.END, "\n", "normal")
+			self.message_area.insert(tk.END, "\n")
+			self.message_area.tag_add("normal", line+".0", line+".end")
 	def refresh_messages(self, refresh=False):
 		r = self.active_channel
 		if len(r) == 0: return
@@ -592,7 +600,7 @@ class FinitApp:
 			self.app = FiniyPyMain(master=self.root, conn=self.client)
 			self.app.mainloop()
 		else:
-			self.app.set_error("Wrong credentials")
+			self.app.set_error("Wrong credentials or network error")
 
 if __name__ == "__main__":
 	FinitApp()
