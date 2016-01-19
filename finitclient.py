@@ -25,6 +25,7 @@ class FinitClient:
 				headers={"Content-Type": "application/json;charset=utf-8"})
 			resp = conn.getresponse();
 			user_data = json.loads(str(resp.read(), "utf-8"))
+			conn.close()
 			if "error" in user_data:
 				self.last_error = user_data["error"]
 				if self.on_login is not None: self.on_login(self, True)
@@ -62,8 +63,9 @@ class FinitClient:
 				conn.request("DELETE", "/api/auth", body="[]",
 					headers={"Content-Type": "text/plain; charset=UTF-8",
 						"Authorization": "Bearer "+self.user_data['token']})
-				resp = conn.getresponse()
-				if str(resp.read(), "utf-8").strip() == "Good":
+				resp = str(conn.getresponse().read(), "utf-8").strip()
+				conn.close()
+				if resp == "Good":
 					success = True
 			except Exception as e:
 				self.last_error = e
@@ -94,6 +96,7 @@ class FinitClient:
 			conn.request("GET", "/api/messages?chatroom_channel={}".format(
 				channel), headers={"Authorization": "Bearer "+self.user_data['token']})
 			resp = json.loads(str(conn.getresponse().read(), "utf-8"))
+			conn.close()
 			return resp
 		except Exception as e:
 			print(e)
@@ -176,6 +179,7 @@ class FinitClient:
 				headers={"Authorization": "Bearer "+self.user_data['token']})
 			resp = conn.getresponse()
 			resp = json.loads(str(resp.readall(), "utf-8"))
+			conn.close()
 			if "data" in resp and resp["data"] is None:
 				return None
 			if "id" not in resp["data"]:
