@@ -13,3 +13,7 @@ This is the repository for FinitPy, a Python 3 library for communicating with [f
 None of the clients are complete and lack support for important features such as new PM notifications and polls.
 
 Thanks to [@louis](https://finit.co/@louis) for his work in a Finit Bot in Python: https://github.com/602p/FinitBot, my code is based in his bot.
+
+**Everyone likes screenshots:**
+
+![FinitPy](https://i.sli.mg/uS2rJ7.png)
