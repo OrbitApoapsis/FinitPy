@@ -535,36 +535,37 @@ class FiniyPyMain(tk.Frame):
 					break
 		displacement = int(disp) - len(m["sender"]["username"])
 		displaced = ' ' * displacement
-		if re.match("^/me\s", m["body"], re.I):
+		body = convert65536(m["body"])
+		if re.match("^/me\s", body, re.I):
 			user_style = (user_type, "bold-italics", "user-@"+m["sender"]["username"])
-			line = self.message_area.index("insert").split(".")[0]
+			line = self.message_area.index("end").split(".")[0]
 			self.message_area.insert(tk.END, displaced+"{} * ".format(d))
 			self.message_area.insert(tk.END, "@"+m["sender"]["username"], user_style)
 			self.message_area.insert(tk.END, " ", "bold-italics")
-			me_start = self.message_area.index("insert")
-			self._generate_links(m["body"][3:])
+			me_start = self.message_area.index("end")
+			self._generate_links(body[3:])
 			self.message_area.insert(tk.END, "\n")
 			self.message_area.tag_add("italics", line+".0", line+".end")
 			self.message_area.tag_add("normal", line+".0", line+".end")
-		elif re.match("^/spoiler\s", m["body"], re.I):
+		elif re.match("^/spoiler\s", body, re.I):
 			user_style = (user_type, "bold", "user-@"+m["sender"]["username"])
-			line = self.message_area.index("insert").split(".")[0]
+			line = self.message_area.index("end").split(".")[0]
 			self.message_area.insert(tk.END, d+" "+displaced)
 			self.message_area.insert(tk.END, "@"+m["sender"]["username"]+":", user_style)
 			self.message_area.insert(tk.END, " ", "bold")
 			self.message_area.insert(tk.END, "[spoiler] ")
-			spoiler_start = self.message_area.index("insert")
-			self._generate_links(m["body"][9:])
+			spoiler_start = self.message_area.index("end")
+			self._generate_links(body[9:])
 			self.message_area.insert(tk.END, "\n")
 			self.message_area.tag_add("spoiler", spoiler_start, line+".end")
 			self.message_area.tag_add("normal", line+".0", line+".end")
 		else:
 			user_style = (user_type, "bold", "user-@"+m["sender"]["username"])
-			line = self.message_area.index("insert").split(".")[0]
+			line = self.message_area.index("end").split(".")[0]
 			self.message_area.insert(tk.END, d+" "+displaced)
 			self.message_area.insert(tk.END, "@"+m["sender"]["username"]+":", user_style)
 			self.message_area.insert(tk.END, " ", "bold")
-			self._generate_links(m["body"])
+			self._generate_links(body)
 			self.message_area.insert(tk.END, "\n")
 			self.message_area.tag_add("normal", line+".0", line+".end")
 	def refresh_messages(self, refresh=False):
