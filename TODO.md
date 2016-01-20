@@ -1,3 +1,4 @@
+ * Fix receiving/reading PMs, something broke them
  * Unread messages per channel
  * Polls
  * Notifications for received PMs while logged out
