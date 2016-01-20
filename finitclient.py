@@ -1,4 +1,4 @@
-import atexit, http.client, json, re, sys, threading, time, websocket
+import atexit, http.client, json, re, sys, threading, time, traceback, websocket
 from datetime import datetime
 
 class FinitClient:
@@ -98,8 +98,8 @@ class FinitClient:
 			resp = json.loads(str(conn.getresponse().read(), "utf-8"))
 			conn.close()
 			return resp
-		except Exception as e:
-			print(e)
+		except Exception:
+			traceback.print_exc()
 		return None
 	def join(self, channel):
 		if channel[0] == "@":
@@ -178,15 +178,15 @@ class FinitClient:
 			conn.request("GET", "/api/users/"+username,
 				headers={"Authorization": "Bearer "+self.user_data['token']})
 			resp = conn.getresponse()
-			resp = json.loads(str(resp.readall(), "utf-8"))
+			resp = json.loads(str(resp.read(), "utf-8"))
 			conn.close()
 			if "data" in resp and resp["data"] is None:
 				return None
 			if "id" not in resp["data"]:
 				return None
 			return resp
-		except:
-			pass
+		except Exception:
+			traceback.print_exc()
 		return None
 	def get_current_user(self):
 		if self.user_data is None:
