@@ -475,15 +475,16 @@ class FiniyPyMain(tk.Frame):
 			self.user_list.activate(active_index)
 	def _generate_links(self, body):
 		ps = (
-			("(?<!\w)#[a-z0-9]+", "CHANNEL"),
-			("(?<![\w/])/?([rv]/[a-z0-9]+|c/\\d+|vp/\\d+)", "SHORT"),
-			("(?<!\w)(https?):((//)|(\\\\))+([\w\d:#@%/;$()~_?\+-=\\\.&](#!)?)*", "LINK"),
-			("(?<!\w)([\w][\w\d-]*\.)+[a-z]{2,}(/([\w\d:#@%/;$()~_?\+-=\\\.&](#!)?)*)?", "NPLINK")
+			("(?<!\w)#[a-z0-9]+", "CHANNEL", re.I),
+			("(?<![\w/])/?([rv]/[a-z0-9]+|c/\\d+|vp/\\d+)", "SHORT", re.I),
+			("(?<!\w)(https?):((//)|(\\\\))+([\w\d:#@%/;$()~_?\+-=\\\.&](#!)?)*", "LINK", re.I),
+			("(?<!\w)([\w][\w\d-]*\.)+[a-z]{2,}(/([\w\d:#@%/;$()~_?\+-=\\\.&](#!)?)*)?", "NPLINK", re.I),
+			("(?<!\w)hunter2(\W|$)", "HUNTER2", 0)
 		)
 		while len(body):
 			l = (float("inf"), None, None)
 			for p in ps:
-				s = re.search(p[0], body, re.I)
+				s = re.search(p[0], body, p[2])
 				if s and s.start() < l[0]:
 					l = (s.start(), s.end(), p[1])
 			if l[0] == float("inf"):
@@ -507,6 +508,9 @@ class FiniyPyMain(tk.Frame):
 				self.message_area.insert(tk.END, text, ("hyper", "link-"+link))
 			elif l[2] == "NPLINK":
 				self.message_area.insert(tk.END, link, ("hyper", "link-http://"+link))
+			elif l[2] == "HUNTER2":
+				l = (l[0], l[0]+7)
+				self.message_area.insert(tk.END, "*******")
 			body = body[l[1]:]
 	def _add_message(self, m):
 		if len(m["created_at"]) <= 5:
