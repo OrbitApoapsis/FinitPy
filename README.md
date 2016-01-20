@@ -16,4 +16,8 @@ Thanks to [@louis](https://finit.co/@louis) for his work in a Finit Bot in Pytho
 
 **Everyone likes screenshots:**
 
+![FinitPy](https://i.sli.mg/04m2GW.png)
+
+**Old screenshots:**
+
 ![FinitPy](https://i.sli.mg/uS2rJ7.png)
