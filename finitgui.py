@@ -312,6 +312,7 @@ class FiniyPyMain(tk.Frame):
 					"username": self.conn.user_data["user"]["username"]},
 				"body": msg
 			})
+			self.message_area.see(tk.END)
 			if len(self.rooms[r]["messages"]) > 100:
 				self.refresh_messages(True)
 			else:
@@ -567,6 +568,10 @@ class FiniyPyMain(tk.Frame):
 		r = self.active_channel
 		if len(r) == 0: return
 		if refresh == True:
+			scroll = False
+			self.message_area.update_idletasks()
+			if self.message_area.bbox(str(int(self.message_area.index("end").split(".")[0])-1)+".0"):
+				scroll = True
 			discarded = []
 			if len(self.rooms[r]["messages"]) > 100:
 				discarded = self.rooms[r]["messages"][:-100]
@@ -579,7 +584,8 @@ class FiniyPyMain(tk.Frame):
 				self.message_area.delete('1.0', str(lines_to_remove+1)+'.0')
 			for i in range(100-len(discarded),100):
 				self._add_message(self.rooms[r]["messages"][i])
-			self.message_area.see(tk.END)
+			if scroll:
+				self.message_area.see(tk.END)
 			self.message_area.config(state=tk.DISABLED)
 		else:
 			self.message_area.config(state=tk.NORMAL)
