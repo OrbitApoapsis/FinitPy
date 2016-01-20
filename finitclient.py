@@ -28,11 +28,11 @@ class FinitClient:
 			conn.close()
 			if "error" in user_data:
 				self.last_error = user_data["error"]
-				if self.on_login is not None: self.on_login(self, True)
+				if self.on_login is not None: self.on_login(self, False)
 				return False
 		except Exception as e:
 			self.last_error = e
-			if self.on_login is not None: self.on_login(self, True)
+			if self.on_login is not None: self.on_login(self, False)
 			return False
 		self.user_data = user_data
 		self.user_id_cache[self.user_data["user"]["username"].upper()] = self.user_data["user"]["id"]
