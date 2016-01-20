@@ -451,7 +451,7 @@ class FiniyPyMain(tk.Frame):
 		if len(r) == 0: return
 		self.rooms[r]["members"].sort(key=lambda u:(
 			int(u["id"])!=1,
-			not (True in [r.upper() == self.conn.get_channel_name(s).upper() for s in u["mod_powers"]]),
+			not any([r.upper() == self.conn.get_channel_name(s).upper() for s in u["mod_powers"]]),
 			u["username"].upper()
 		))
 		prev_active_user = self.user_list.get(tk.ACTIVE)
