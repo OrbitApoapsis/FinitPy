@@ -452,6 +452,7 @@ class FiniyPyMain(tk.Frame):
 		self.rooms[r]["members"].sort(key=lambda u:(
 			int(u["id"])!=1,
 			not any([r.upper() == self.conn.get_channel_name(s).upper() for s in u["mod_powers"]]),
+			u["username"] != self.conn.user_data["user"]["username"],
 			u["username"].upper()
 		))
 		prev_active_user = self.user_list.get(tk.ACTIVE)
@@ -460,15 +461,19 @@ class FiniyPyMain(tk.Frame):
 		prev_name = ""
 		for i,u in enumerate(self.rooms[r]["members"]):
 			username = u["username"]
+			color = None
 			if int(u["id"]) == 1:
-				username = "[ADMIN] " + username
+				color = "red"
 			else:
 				for m in u["mod_powers"]:
 					if self.conn.get_channel_name(m).upper() == r.upper():
-						username = "[MOD] " + username
+						color = "blue"
 						break
+			if color is None and username == self.conn.user_data["user"]["username"]:
+				color = "lime green"
 			if prev_name != username:
 				self.user_list.insert(tk.END, username)
+				if color: self.user_list.itemconfig(tk.END, foreground=color)
 			if username == prev_active_user:
 				active_index = i
 			prev_name = username
