@@ -394,10 +394,12 @@ class FiniyPyMain(tk.Frame):
 				elif channel == self.active_channel:
 					self.refresh_messages(True)
 			elif data["event"] == 10: # This is a PM
+				name = "@" + data["source"]["username"]
+				if name in self.rooms:
+					return
 				id1, id2 = int(data["source_id"]), int(data["user_id"])
 				if id2 < id1:
 					id1, id2 = id2, id1
-				name = "@" + data["source"]["username"]
 				uid = self.conn.get_user_id(data["source"]["username"])
 				self.channel_list.insert(tk.END, name + " *")
 				self.rooms[name] = {"channel_name":"prv_{}_{}".format(id1,id2), "id":uid,
