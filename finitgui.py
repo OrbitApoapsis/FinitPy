@@ -549,6 +549,12 @@ class FiniyPyMain(tk.Frame):
 				self.message_area.insert(tk.END, "*******")
 			body = body[l[1]:]
 	def _add_message(self, m):
+		if m["sender"] is None:
+			m["sender"] = {
+				"id": 0,
+				"username": "Guest",
+				"mod_powers": []
+			}
 		if len(m["created_at"]) <= 5:
 			d = m["created_at"]
 		else:
