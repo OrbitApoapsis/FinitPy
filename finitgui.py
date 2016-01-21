@@ -235,7 +235,7 @@ class FiniyPyMain(tk.Frame):
 			elif t.startswith("channel-"):
 				chn = t[8:].lower()
 				if chn not in self.rooms:
-					self.conn.join(chn)
+					self.finit_join(chn)
 				else:
 					idx = -1
 					for i in range(self.channel_list.size()):
@@ -276,7 +276,7 @@ class FiniyPyMain(tk.Frame):
 			if sel != self.active_channel:
 				self.active_channel = sel
 				if len(sel) and not self.rooms[sel]["loaded"]:
-					self.conn.join(sel)
+					self.finit_join(sel)
 				else:
 					self.refresh_lists()
 		if self.focus_displayof() is not None and (self.new_msg_count > 0 or self.new_pm):
@@ -291,9 +291,7 @@ class FiniyPyMain(tk.Frame):
 		))
 		self.message.focus_set()
 	def join_room(self, event):
-		r = self.conn.get_normalized_channel_name(self.join_var.get())
-		if r is None or r in self.rooms: return
-		self.conn.join(r)
+		self.finit_join(self.conn.get_normalized_channel_name(self.join_var.get()))
 	def leave_room(self):
 		if len(self.active_channel):
 			self.conn.leave(self.active_channel)
@@ -322,20 +320,42 @@ class FiniyPyMain(tk.Frame):
 			self.conn.leave(r)
 		self.conn.wait_for_logout()
 		self.master.destroy()
+	def finit_join(self, room):
+		name = self.conn.get_normalized_channel_name(room)
+		if name in self.rooms and self.rooms[name]["loaded"]:
+			idx = -1
+			for i in range(self.channel_list.size()):
+				if self.channel_list.get(i) == self.rooms[name]["list_name"]:
+					idx = i
+					break
+			if idx < 0: return
+			self.join_var.set("")
+			self.channel_list.selection_clear(0, tk.END)
+			self.channel_list.selection_set(idx)
+			self.channel_list.activate(idx)
+			self.refresh_lists()
+			return
+		uid = self.conn.get_user_id(name)
+		if name[0] == "@":
+			if uid is None: return
+			name = "@"+self.conn.user_name_cache[uid]
+		messages = self.conn.get_messages(name)
+		if messages is not None and "data" in messages:
+			messages = messages["data"]
+		else:
+			messages = []
+		messages.reverse()
+		if name in self.rooms:
+			self.rooms[name]["messages"] = messages
+		else:
+			self.rooms[name] = {"channel_name":name, "id":uid,
+				"messages":messages, "list_name":name, "loaded":True}
+		self.conn.join(name)
 	def on_message(self, conn, data):
 		try:
 			if data["event"] == "subscribed":
 				name = self.conn.get_channel_name(data["channel"])
-				uid = self.conn.get_user_id(name)
-				messages = self.conn.get_messages(name)
-				if messages is not None and "data" in messages:
-					messages = messages["data"]
-				else:
-					messages = []
-				messages.reverse()
-				if name in self.rooms:
-					self.rooms[name]["messages"] = messages
-					self.rooms[name]["loaded"] = True
+				if name in self.rooms and not self.rooms[name]["loaded"]:
 					idx = -1
 					for i in range(self.channel_list.size()):
 						if self.channel_list.get(i) == self.rooms[name]["list_name"]:
@@ -355,9 +375,17 @@ class FiniyPyMain(tk.Frame):
 					self.channel_list.selection_clear(0, tk.END)
 					self.channel_list.selection_set(tk.END)
 					self.channel_list.activate(self.channel_list.size()-1)
-					self.rooms[name] = {"channel_name":data["channel"], "id":uid,
-						"messages":messages, "members":data["members"],
-						"list_name":name, "loaded":True}
+				self.rooms[name]["channel_name"] = data["channel"]
+				self.rooms[name]["members"] = data["members"]
+				self.rooms[name]["loaded"] = True
+			elif data["event"] == "subscription-failure":
+				name = self.conn.get_channel_name(data["channel"])
+				if name in self.rooms:
+					del self.rooms[name]
+				if data["reason"] == "invalid-input":
+					self.join_var.set("Invalid name")
+				else:
+					self.join_var.set("Failed to subscribe")
 			elif data["event"] == "unsubscribed":
 				f = None
 				for k in self.rooms:
