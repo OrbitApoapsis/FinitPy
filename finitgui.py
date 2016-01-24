@@ -254,14 +254,18 @@ class FiniyPyMain(tk.Frame):
 			if n["event"] == 10: # PM
 				name = "@" + n["source"]["username"]
 				self.conn.read_notification(n["id"])
-				if name in self.rooms: continue
+				if name in self.rooms:
+					self.rooms[name]["unread"] += 1
+					self.update_channel_list(name)
+					continue
 				id1, id2 = int(n["source_id"]), int(n["user_id"])
 				if id2 < id1:
 					id1, id2 = id2, id1
 				uid = self.conn.get_user_id(n["source"]["username"])
-				self.channel_list.insert(tk.END, name + " *")
+				self.channel_list.insert(tk.END, name + " (1)")
 				self.rooms[name] = {"channel_name":"prv_{}_{}".format(id1,id2), "id":uid,
-					"messages":[], "members":[], "list_name":name+" *", "loaded":False}
+					"messages":[], "members":[], "list_name":name+" (1)", "loaded":False,
+					"unread": 1}
 				self.new_pm = True
 		self.update_title()
 	def _enter_link(self, event):
@@ -326,6 +330,8 @@ class FiniyPyMain(tk.Frame):
 			sel = self.get_channel_from_list_name(self.channel_list.get(tk.ACTIVE))
 			if sel != self.active_channel:
 				self.active_channel = sel
+				self.rooms[sel]["unread"] = 0
+				self.update_channel_list(sel)
 				if len(sel) and not self.rooms[sel]["loaded"]:
 					self.finit_join(sel)
 				else:
@@ -400,7 +406,8 @@ class FiniyPyMain(tk.Frame):
 			self.rooms[name]["messages"] = messages
 		else:
 			self.rooms[name] = {"channel_name":name, "id":uid,
-				"messages":messages, "list_name":name, "loaded":True}
+				"messages":messages, "list_name":name, "loaded":True,
+				"unread": 0}
 		self.conn.join(name)
 	def on_message(self, conn, data):
 		try:
@@ -469,23 +476,37 @@ class FiniyPyMain(tk.Frame):
 				self.rooms[channel]["messages"].append(data)
 				if len(self.rooms[channel]["messages"]) > 100:
 					if channel == self.active_channel:
+						self.rooms[channel]["unread"] = 0
+						self.update_channel_list(channel)
 						self.refresh_messages(True)
 					else:
 						self.rooms[channel]["messages"] = self.rooms[channel]["messages"][-100:]
+						self.rooms[channel]["unread"] += 1
+						self.update_channel_list(channel)
 				elif channel == self.active_channel:
+					self.rooms[channel]["unread"] = 0
+					self.update_channel_list(channel)
 					self.refresh_messages(True, less_than_100=True)
+				else:
+					self.rooms[channel]["unread"] += 1
+					self.update_channel_list(channel)
 			elif data["event"] == 10: # This is a PM
+				self.conn.read_notification(data["id"])
 				name = "@" + data["source"]["username"]
 				if name in self.rooms:
+					self.rooms[name]["unread"] += 1
+					self.update_channel_list(name)
+					self.new_pm = True
+					self.update_title()
 					return
 				id1, id2 = int(data["source_id"]), int(data["user_id"])
 				if id2 < id1:
 					id1, id2 = id2, id1
-				self.conn.read_notification(data["id"])
 				uid = self.conn.get_user_id(data["source"]["username"])
-				self.channel_list.insert(tk.END, name + " *")
+				self.channel_list.insert(tk.END, name + " (1)")
 				self.rooms[name] = {"channel_name":"prv_{}_{}".format(id1,id2), "id":uid,
-					"messages":[], "members":[], "list_name":name+" *", "loaded":False}
+					"messages":[], "members":[], "list_name":name+" (1)", "loaded":False,
+					"unread": 1}
 				self.new_pm = True
 				self.update_title()
 			elif data["event"] == "member-added":
@@ -508,6 +529,24 @@ class FiniyPyMain(tk.Frame):
 				print(data)
 		except Exception:
 			traceback.print_exc()
+	def update_channel_list(self, name):
+		idx = -1
+		for i in range(self.channel_list.size()):
+			if self.channel_list.get(i) == self.rooms[name]["list_name"]:
+				idx = i
+				break
+		if idx < 0: return
+		if self.active_channel == name or self.rooms[name]["unread"] == 0:
+			self.rooms[name]["list_name"] = name
+		elif self.rooms[name]["unread"] > 0:
+			self.rooms[name]["list_name"] = "{} ({})".format(name,
+				self.rooms[name]["unread"])
+		self.channel_list.delete(idx)
+		self.channel_list.insert(idx, self.rooms[name]["list_name"])
+		if self.active_channel == name:
+			self.channel_list.selection_clear(0, tk.END)
+			self.channel_list.selection_set(idx)
+			self.channel_list.activate(idx)
 	def update_title(self):
 		if self.focus_displayof() is None:
 			pm = "* " if self.new_pm else ""

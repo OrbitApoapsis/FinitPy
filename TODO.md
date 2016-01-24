@@ -1,4 +1,3 @@
- * Unread messages per channel
  * Polls
  * Configurable colors for types of users
  * Add support for displaying chat info
