@@ -188,6 +188,44 @@ class FinitClient:
 		except Exception:
 			traceback.print_exc()
 		return None
+	def get_notifications(self, page=None):
+		page = "" if page is None else "?page="+str(page)
+		try:
+			conn = http.client.HTTPSConnection("finit.co", timeout=30)
+			conn.request("GET", "/api/notifications"+page,
+				headers={"Authorization": "Bearer "+self.user_data['token']})
+			resp = json.loads(str(conn.getresponse().read(), "utf-8"))
+			conn.close()
+			return resp
+		except Exception:
+			traceback.print_exc()
+		return None
+	def get_all_notifications(self):
+		n = self.get_notifications()
+		if n is None: return None
+		if n["data"]["total"] == 0: return []
+		page = 1
+		notifications = []
+		while n is not None:
+			notifications.extend(n["data"]["data"])
+			if n["data"]["next_page_url"] is not None:
+				page += 1
+				n = self.get_notifications(page)
+			else:
+				break
+		return notifications
+	def read_notification(self, id):
+		try:
+			conn = http.client.HTTPSConnection("finit.co", timeout=30)
+			conn.request("PATCH", "/api/notifications/"+str(id),
+				headers={"Authorization": "Bearer "+self.user_data['token']},
+				body=json.dumps({"is_read":True}))
+			resp = json.loads(str(conn.getresponse().read(), "utf-8"))
+			conn.close()
+			return resp
+		except Exception:
+			traceback.print_exc()
+		return None
 	def get_current_user(self):
 		if self.user_data is None:
 			return None, None

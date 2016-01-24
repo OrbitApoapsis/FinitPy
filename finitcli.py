@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import re
+import re, sys, traceback
 from datetime import datetime
 from finitclient import FinitClient
 from getpass import getpass
@@ -27,7 +27,18 @@ def on_message(conn, data):
 		}
 		for m in data["members"]:
 			conn.custom_data["members"].append({"id":m["id"],"user":m["username"]})
-		print("\033[1G * successfully joined {}".format(conn.custom_data["channel"]), end="\n> ")
+		print("\033[1G * successfully joined {}".format(conn.custom_data["channel"]))
+		messages = conn.get_messages(conn.get_channel_name(data["channel"]))
+		if messages is not None and "data" in messages:
+			messages = messages["data"]
+		else:
+			messages = []
+		messages.reverse()
+		for m in messages:
+			print("\033[1G @{}: {}".format(
+				m["sender"]["username"],
+				m["body"]))
+		print("", end="\n> ")
 	elif data["event"] == "unsubscribed":
 		print("\033[1G * successfully left {}".format(conn.custom_data["channel"]), end="\n> ")
 		conn.custom_data = None
@@ -47,7 +58,8 @@ def on_message(conn, data):
 				data["data"]["body"]
 			), end="\n> ")
 	elif data["event"] == 10: # This is a PM notification (does not contain the actuall PM)
-		#print("\033[1G *", data["event_info"])
+		print("\033[1G *", data["event_info"], end="\n> ")
+		conn.read_notification(data["id"])
 		pass
 	elif data["event"] == "member-added":
 		m = data["data"]
@@ -82,7 +94,7 @@ def on_message(conn, data):
 		pass
 
 def on_error(conn, e):
-	print("ERROR:", e)
+	traceback.print_exc()
 	sys.exit()
 
 if __name__ == "__main__":
@@ -106,6 +118,7 @@ if __name__ == "__main__":
 				print(" /join @user")
 				print(" /leave")
 				print(" /list")
+				print(" /notifications")
 				print(" /whois @user")
 				print(" /exit")
 				print("Anything else you type will be sent as a message")
@@ -126,6 +139,19 @@ if __name__ == "__main__":
 					print("Members of channel: #{}".format(c.custom_data["channel"]))
 					for m in c.custom_data["members"]:
 						print(" *", m["user"])
+			elif len(cmd) == 1 and cmd[0] == "/NOTIFICATIONS":
+				notif = c.get_all_notifications()
+				users = []
+				for n in notif:
+					if n["event"] == 10: # PM
+						if "@"+n["source"]["username"] not in users:
+							users.append("@"+n["source"]["username"])
+						c.read_notification(n["id"])
+				if len(users) > 0:
+					print("You have received PMs from the following users:")
+					print(" " + "\n ".join(users))
+				else:
+					print("You haven't received any PMs")
 			elif len(cmd) == 2 and cmd[0] == "/WHOIS":
 				info = c.get_user_info(cmd[1].strip())
 				if info is None:
