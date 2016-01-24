@@ -401,6 +401,8 @@ class FiniyPyMain(tk.Frame):
 					del self.rooms[name]
 				if data["reason"] == "invalid-input":
 					self.join_var.set("Invalid name")
+				elif data["reason"] == "banned":
+					self.join_var.set("You are banned from "+self.conn.get_channel_name(data["channel"]))
 				else:
 					self.join_var.set("Failed to subscribe")
 			elif data["event"] == "unsubscribed":
