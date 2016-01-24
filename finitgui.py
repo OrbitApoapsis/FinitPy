@@ -641,8 +641,11 @@ class FiniyPyMain(tk.Frame):
 			self.message_area.config(state=tk.NORMAL)
 			if lines_to_remove > 0:
 				self.message_area.delete('1.0', str(lines_to_remove+1)+'.0')
-			for i in range(100-len(discarded),100):
-				self._add_message(self.rooms[r]["messages"][i])
+			if len(discarded) == 0:
+				self._add_message(self.rooms[r]["messages"][-1])
+			else:
+				for i in range(100-len(discarded),100):
+					self._add_message(self.rooms[r]["messages"][i])
 			if scroll:
 				self.message_area.see(tk.END)
 			self.message_area.config(state=tk.DISABLED)
