@@ -748,6 +748,10 @@ class FinitApp:
 			with open('config.ini', 'w') as configfile:
 				config.write(configfile)
 		config.read('config.ini')
+		if not 'COLOR' in config:
+			config['COLOR'] = {'admin': 'red', 'mod': 'blue', 'op': 'lime green'}
+			with open('config.ini', 'w') as configfile:
+				config.write(configfile)
 	def on_login(self, email, pwd):
 		if self.client.login(email, pwd):
 			self.root.destroy()
