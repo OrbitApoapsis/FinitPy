@@ -134,6 +134,7 @@ class FiniyPyMain(tk.Frame):
 		self.master.protocol("WM_DELETE_WINDOW", self.before_close)
 		self.grid(sticky=tk.N+tk.S+tk.E+tk.W)
 		self.create_widgets()
+		self.get_notifications()
 		self.links = {}
 	def create_widgets(self):
 		top = self.winfo_toplevel()
@@ -213,6 +214,22 @@ class FiniyPyMain(tk.Frame):
 		self.mention.grid(column=3, row=4, sticky=tk.E+tk.W)
 		
 		self.after(0, self.poll)
+	def get_notifications(self):
+		notif = self.conn.get_all_notifications()
+		for n in notif:
+			if n["event"] == 10: # PM
+				name = "@" + n["source"]["username"]
+				self.conn.read_notification(n["id"])
+				if name in self.rooms: continue
+				id1, id2 = int(n["source_id"]), int(n["user_id"])
+				if id2 < id1:
+					id1, id2 = id2, id1
+				uid = self.conn.get_user_id(n["source"]["username"])
+				self.channel_list.insert(tk.END, name + " *")
+				self.rooms[name] = {"channel_name":"prv_{}_{}".format(id1,id2), "id":uid,
+					"messages":[], "members":[], "list_name":name+" *", "loaded":False}
+				self.new_pm = True
+		self.update_title()
 	def _enter_link(self, event):
 		self.message_area.config(cursor="hand2")
 	def _leave_link(self, event):
@@ -428,6 +445,7 @@ class FiniyPyMain(tk.Frame):
 				id1, id2 = int(data["source_id"]), int(data["user_id"])
 				if id2 < id1:
 					id1, id2 = id2, id1
+				self.conn.read_notification(data["id"])
 				uid = self.conn.get_user_id(data["source"]["username"])
 				self.channel_list.insert(tk.END, name + " *")
 				self.rooms[name] = {"channel_name":"prv_{}_{}".format(id1,id2), "id":uid,

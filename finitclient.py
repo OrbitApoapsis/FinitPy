@@ -1,6 +1,16 @@
 import atexit, http.client, json, re, sys, threading, time, traceback, websocket
 from datetime import datetime
 
+#Adapted from http://bobrochel.blogspot.in/2010/11/bad-servers-chunked-encoding-and.html
+def patch_http_response_read(func):
+	def inner(*args):
+		try:
+			return func(*args)
+		except http.client.IncompleteRead as e:
+			return e.partial
+	return inner
+http.client.HTTPResponse.read = patch_http_response_read(http.client.HTTPResponse.read)
+
 class FinitClient:
 	def __init__(self):
 		self.user_data = None
