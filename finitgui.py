@@ -107,14 +107,48 @@ class ConfigWindow(tk.Frame):
 		disp_box = tk.Entry(self.wind)
 		self.disp_var = tk.StringVar()
 		disp_box["textvariable"] = self.disp_var
-		disp_box.config(width=5,)
+		disp_box.config(width=10,)
 		disp_box.grid(column=0, row=0, sticky=tk.W)
 		disp_box.insert(tk.END, config['MAIN']['displacement'])
+
+		user_admin_lbl = tk.Label(self.wind, text="Admin Color")
+		user_admin_lbl.grid(column=2, row=1, sticky=tk.W)
+		
+		disp_box = tk.Entry(self.wind)
+		self.admin_color_var = tk.StringVar()
+		disp_box["textvariable"] = self.admin_color_var
+		disp_box.config(width=10,)
+		disp_box.grid(column=0, row=1, sticky=tk.W)
+		disp_box.insert(tk.END, config['COLOR']['admin'])
+		
+		user_admin_lbl = tk.Label(self.wind, text="Mod Color")
+		user_admin_lbl.grid(column=2, row=2, sticky=tk.W)
+		
+		disp_box = tk.Entry(self.wind)
+		self.mod_color_var = tk.StringVar()
+		disp_box["textvariable"] = self.mod_color_var
+		disp_box.config(width=10,)
+		disp_box.grid(column=0, row=2, sticky=tk.W)
+		disp_box.insert(tk.END, config['COLOR']['mod'])
+		
+		user_admin_lbl = tk.Label(self.wind, text="Your Color")
+		user_admin_lbl.grid(column=2, row=3, sticky=tk.W)
+		
+		disp_box = tk.Entry(self.wind)
+		self.op_color_var = tk.StringVar()
+		disp_box["textvariable"] = self.op_color_var
+		disp_box.config(width=10,)
+		disp_box.grid(column=0, row=3, sticky=tk.W)
+		disp_box.insert(tk.END, config['COLOR']['op'])
+		
 		
 		save = tk.Button(self.wind, text="Save", command=self.save)
-		save.grid(column=0, row=3, sticky=tk.W)
+		save.grid(column=0, row=4, sticky=tk.W)
 	def save(self):
 		config['MAIN']['displacement'] = self.disp_var.get()
+		config['COLOR']['admin'] = self.admin_color_var.get()
+		config['COLOR']['mod'] = self.mod_color_var.get()
+		config['COLOR']['op'] = self.op_color_var.get()
 		with open('config.ini', 'w') as configfile:
 			config.write(configfile)
 		self.wind.destroy()
@@ -177,9 +211,9 @@ class FiniyPyMain(tk.Frame):
 		self.message_area.tag_configure('bold', font=('Courier', 10, 'bold',))
 		self.message_area.tag_configure('bold-italics', font=('Courier', 10, 'bold italic',))
 		self.message_area.tag_configure('user')
-		self.message_area.tag_configure('admin', foreground='red')
-		self.message_area.tag_configure('mod', foreground='blue')
-		self.message_area.tag_configure('op', foreground='lime green')
+		self.message_area.tag_configure('admin', foreground=config['COLOR']['admin'])
+		self.message_area.tag_configure('mod', foreground=config['COLOR']['mod'])
+		self.message_area.tag_configure('op', foreground=config['COLOR']['op'])
 		for i in ["admin","mod","op", "user"]:
 			self.message_area.tag_bind(i, "<Button-1>", self._click_user)
 			self.message_area.tag_bind(i, "<Enter>", self._enter_link)
@@ -513,14 +547,14 @@ class FiniyPyMain(tk.Frame):
 			username = u["username"]
 			color = None
 			if int(u["id"]) == 1:
-				color = "red"
+				color = config['COLOR']['admin']
 			else:
 				for m in u["mod_powers"]:
 					if self.conn.get_channel_name(m).upper() == r.upper():
-						color = "blue"
+						color = config['COLOR']['mod']
 						break
 			if color is None and username == self.conn.user_data["user"]["username"]:
-				color = "lime green"
+				color = config['COLOR']['op']
 			if prev_name != username:
 				self.user_list.insert(tk.END, username)
 				if color: self.user_list.itemconfig(tk.END, foreground=color)
@@ -671,6 +705,7 @@ class FinitApp:
 	def initconfig(self):
 		if os.path.isfile('config.ini') is False:
 			config['MAIN'] = {'displacement': 0}
+			config['COLOR'] = {'admin': 'red', 'mod': 'blue', 'op': 'lime green'}
 			with open('config.ini', 'w') as configfile:
 				config.write(configfile)
 		config.read('config.ini')
