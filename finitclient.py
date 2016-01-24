@@ -230,7 +230,7 @@ class FinitClient:
 			conn.request("PATCH", "/api/notifications/"+str(id),
 				headers={"Authorization": "Bearer "+self.user_data['token']},
 				body=json.dumps({"is_read":True}))
-			resp = json.loads(str(conn.getresponse().read(), "utf-8"))
+			resp = str(conn.getresponse().read(), "utf-8")
 			conn.close()
 			return resp
 		except Exception:

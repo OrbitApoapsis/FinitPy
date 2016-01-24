@@ -437,7 +437,7 @@ class FiniyPyMain(tk.Frame):
 					else:
 						self.rooms[channel]["messages"] = self.rooms[channel]["messages"][-100:]
 				elif channel == self.active_channel:
-					self.refresh_messages(True)
+					self.refresh_messages(True, less_than_100=True)
 			elif data["event"] == 10: # This is a PM
 				name = "@" + data["source"]["username"]
 				if name in self.rooms:
@@ -623,7 +623,7 @@ class FiniyPyMain(tk.Frame):
 			self._generate_links(body)
 			self.message_area.insert(tk.END, "\n")
 			self.message_area.tag_add("normal", line+".0", line+".end")
-	def refresh_messages(self, refresh=False):
+	def refresh_messages(self, refresh=False, less_than_100=False):
 		r = self.active_channel
 		if len(r) == 0: return
 		if refresh == True:
@@ -631,19 +631,20 @@ class FiniyPyMain(tk.Frame):
 			self.message_area.update_idletasks()
 			if self.message_area.bbox(str(int(self.message_area.index("end").split(".")[0])-1)+".0"):
 				scroll = True
-			discarded = []
-			if len(self.rooms[r]["messages"]) > 100:
-				discarded = self.rooms[r]["messages"][:-100]
-				self.rooms[r]["messages"] = self.rooms[r]["messages"][-100:]
-			lines_to_remove = 0
-			for d in discarded:
-				lines_to_remove += 1 + len(list(filter(lambda x:x=='\n', d["body"])))
-			self.message_area.config(state=tk.NORMAL)
-			if lines_to_remove > 0:
-				self.message_area.delete('1.0', str(lines_to_remove+1)+'.0')
-			if len(discarded) == 0:
+			if less_than_100 == True:
+				self.message_area.config(state=tk.NORMAL)
 				self._add_message(self.rooms[r]["messages"][-1])
 			else:
+				discarded = []
+				if len(self.rooms[r]["messages"]) > 100:
+					discarded = self.rooms[r]["messages"][:-100]
+					self.rooms[r]["messages"] = self.rooms[r]["messages"][-100:]
+				lines_to_remove = 0
+				for d in discarded:
+					lines_to_remove += 1 + len(list(filter(lambda x:x=='\n', d["body"])))
+				self.message_area.config(state=tk.NORMAL)
+				if lines_to_remove > 0:
+					self.message_area.delete('1.0', str(lines_to_remove+1)+'.0')
 				for i in range(100-len(discarded),100):
 					self._add_message(self.rooms[r]["messages"][i])
 			if scroll:
