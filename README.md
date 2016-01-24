@@ -14,6 +14,8 @@ None of the clients are complete and lack support for important features such as
 
 Thanks to [@louis](https://finit.co/@louis) for his work in a Finit Bot in Python: https://github.com/602p/FinitBot, my code is based in his bot.
 
+Thanks to [@robsob91](https://github.com/robsob91) and [@OrbitApoapsis](https://github.com/OrbitApoapsis) for contributing code to the project.
+
 **Everyone likes screenshots:**
 
 ![FinitPy](https://i.sli.mg/04m2GW.png)
