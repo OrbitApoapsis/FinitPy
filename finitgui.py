@@ -521,6 +521,8 @@ class FiniyPyMain(tk.Frame):
 					self.join_var.set("You are banned from "+self.conn.get_channel_name(data["channel"]))
 				else:
 					self.join_var.set("Failed to subscribe")
+			elif data["event"] == "kicked-from-channel":
+				self.conn.leave(self.conn.get_channel_name(data["channel"]))
 			elif data["event"] == "unsubscribed":
 				f = None
 				for k in self.rooms:
