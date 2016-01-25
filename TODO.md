@@ -4,4 +4,3 @@
  * Add support for moderator dashboard
  * User info: website and bio
  * Friends and boxes (I'm not sure about this one)
- * Lovely logs! wonderful logs!
