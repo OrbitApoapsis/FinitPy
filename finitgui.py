@@ -161,33 +161,45 @@ class ConfigWindow(tk.Frame):
 		disp_box.insert(tk.END, config['COLOR']['op'])
 		disp_box.config(foreground=config['COLOR']['fg'], background=config['COLOR']['bg'])
 		
+		user_std_lbl = tk.Label(self.wind, text="User Color")
+		user_std_lbl.grid(column=2, row=4, sticky=tk.W)
+		user_std_lbl.config(foreground=config['COLOR']['fg'], background=config['COLOR']['bg'])
+		
+		disp_box = tk.Entry(self.wind)
+		self.std_color_var = tk.StringVar()
+		disp_box["textvariable"] = self.std_color_var
+		disp_box.config(width=10,)
+		disp_box.grid(column=0, row=4, sticky=tk.W)
+		disp_box.insert(tk.END, config['COLOR']['std'])
+		disp_box.config(foreground=config['COLOR']['fg'], background=config['COLOR']['bg'])
+		
 		user_fg_lbl = tk.Label(self.wind, text="Text Color")
-		user_fg_lbl.grid(column=2, row=4, sticky=tk.W)
+		user_fg_lbl.grid(column=2, row=5, sticky=tk.W)
 		user_fg_lbl.config(foreground=config['COLOR']['fg'], background=config['COLOR']['bg'])
 		
 		disp_box = tk.Entry(self.wind)
 		self.fg_color_var = tk.StringVar()
 		disp_box["textvariable"] = self.fg_color_var
 		disp_box.config(width=10,)
-		disp_box.grid(column=0, row=4, sticky=tk.W)
+		disp_box.grid(column=0, row=5, sticky=tk.W)
 		disp_box.insert(tk.END, config['COLOR']['fg'])
 		disp_box.config(foreground=config['COLOR']['fg'], background=config['COLOR']['bg'])
 		
 		user_bg_lbl = tk.Label(self.wind, text="Background Color")
-		user_bg_lbl.grid(column=2, row=5, sticky=tk.W)
+		user_bg_lbl.grid(column=2, row=6, sticky=tk.W)
 		user_bg_lbl.config(foreground=config['COLOR']['fg'], background=config['COLOR']['bg'])
 		
 		disp_box = tk.Entry(self.wind)
 		self.bg_color_var = tk.StringVar()
 		disp_box["textvariable"] = self.bg_color_var
 		disp_box.config(width=10,)
-		disp_box.grid(column=0, row=5, sticky=tk.W)
+		disp_box.grid(column=0, row=6, sticky=tk.W)
 		disp_box.insert(tk.END, config['COLOR']['bg'])
 		disp_box.config(foreground=config['COLOR']['fg'], background=config['COLOR']['bg'])
 		
 		
 		save = tk.Button(self.wind, text="Save", command=self.save)
-		save.grid(column=0, row=6, sticky=tk.W)
+		save.grid(column=0, row=7, sticky=tk.W)
 		save.config(foreground=config['COLOR']['fg'], background=config['COLOR']['bg'])
 	def save(self):
 		config['MAIN']['displacement'] = self.disp_var.get()
@@ -196,6 +208,7 @@ class ConfigWindow(tk.Frame):
 		config['COLOR']['op'] = self.op_color_var.get()
 		config['COLOR']['fg'] = self.fg_color_var.get()
 		config['COLOR']['bg'] = self.bg_color_var.get()
+		config['COLOR']['std'] = self.std_color_var.get()
 		with open('config.ini', 'w') as configfile:
 			config.write(configfile)
 		self.wind.destroy()
@@ -265,7 +278,7 @@ class FiniyPyMain(tk.Frame):
 		self.message_area.tag_configure('italics', font=('Courier', 10, 'italic',))
 		self.message_area.tag_configure('bold', font=('Courier', 10, 'bold',))
 		self.message_area.tag_configure('bold-italics', font=('Courier', 10, 'bold italic',))
-		self.message_area.tag_configure('user')
+		self.message_area.tag_configure('user', foreground=config['COLOR']['std'])
 		self.message_area.tag_configure('admin', foreground=config['COLOR']['admin'])
 		self.message_area.tag_configure('mod', foreground=config['COLOR']['mod'])
 		self.message_area.tag_configure('op', foreground=config['COLOR']['op'])
@@ -808,7 +821,7 @@ class FinitApp:
 					a[k] = b[k]
 		default_options = {'displacement': 0}
 		default_colors = {'admin': 'red', 'mod': 'blue', 'op': 'lime green',
-			'fg': 'black', 'bg': 'white'}
+			'std': 'black', 'fg': 'black', 'bg': 'white'}
 		if os.path.isfile('config.ini') is False:
 			config['MAIN'] = default_options
 			config['COLOR'] = default_colors
