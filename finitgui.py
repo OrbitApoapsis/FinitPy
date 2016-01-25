@@ -802,24 +802,26 @@ class FinitApp:
 		self.app = FinitPyLogin(master=self.root, on_login=self.on_login)
 		self.app.mainloop()
 	def initconfig(self):
+		def extend(a, b):
+			for k in b:
+				if k not in a:
+					a[k] = b[k]
+		default_options = {'displacement': 0}
+		default_colors = {'admin': 'red', 'mod': 'blue', 'op': 'lime green',
+			'fg': 'black', 'bg': 'white'}
 		if os.path.isfile('config.ini') is False:
-			config['MAIN'] = {'displacement': 0}
-			config['COLOR'] = {'admin': 'red', 'mod': 'blue', 'op': 'lime green',
-				'fg': 'black', 'bg': 'white'}
+			config['MAIN'] = default_options
+			config['COLOR'] = default_colors
 			with open('config.ini', 'w') as configfile:
 				config.write(configfile)
 		config.read('config.ini')
-		changed = False
-		if not 'MAIN' in config:
-			config['MAIN'] = {'displacement': 0}
-			changed = True
-		if not 'COLOR' in config:
-			config['COLOR'] = {'admin': 'red', 'mod': 'blue', 'op': 'lime green',
-				'fg': 'black', 'bg': 'white'}
-			changed = True
-		if changed == True:
-			with open('config.ini', 'w') as configfile:
-				config.write(configfile)
+		if not 'MAIN' in config: config['MAIN'] = {}
+		extend(config['MAIN'], default_options)
+		if not 'COLOR' in config: config['COLOR'] = {}
+		extend(config['COLOR'], default_colors)
+		
+		with open('config.ini', 'w') as configfile:
+			config.write(configfile)
 	def on_login(self, email, pwd):
 		if self.client.login(email, pwd):
 			self.root.destroy()
