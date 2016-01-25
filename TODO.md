@@ -1,3 +1,4 @@
+ * Statusbar (kicked, banned, errors)
  * Polls
  * Add support for displaying chat info
  * Add notifications for username mentions
