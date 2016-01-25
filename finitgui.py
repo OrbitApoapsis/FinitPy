@@ -258,11 +258,11 @@ class FiniyPyMain(tk.Frame):
 		self.join_var = tk.StringVar()
 		self.join["textvariable"] = self.join_var
 		self.join.bind("<Key-Return>", self.join_room)
-		self.join.grid(column=0, row=2)
+		self.join.grid(column=0, row=2, sticky=tk.E+tk.W)
 		self.join.config(foreground=config['COLOR']['fg'], background=config['COLOR']['bg'])
 		
 		self.channel_list = tk.Listbox(self)
-		self.channel_list.grid(column=0, row=3, sticky=tk.N+tk.S)
+		self.channel_list.grid(column=0, row=3, sticky=tk.N+tk.S+tk.E+tk.W)
 		self.channel_list.configure(exportselection=False)
 		self.channel_list.config(foreground=config['COLOR']['fg'], background=config['COLOR']['bg'])
 		
@@ -300,7 +300,7 @@ class FiniyPyMain(tk.Frame):
 		self.users_lbl.config(foreground=config['COLOR']['fg'], background=config['COLOR']['bg'])
 		
 		self.user_list = tk.Listbox(self)
-		self.user_list.grid(column=3, row=3, sticky=tk.N+tk.S)
+		self.user_list.grid(column=3, row=3, sticky=tk.N+tk.S+tk.E+tk.W)
 		self.user_list.configure(exportselection=False)
 		self.user_list.config(foreground=config['COLOR']['fg'], background=config['COLOR']['bg'])
 		
