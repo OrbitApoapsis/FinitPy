@@ -49,36 +49,46 @@ class FinitPyLogin(tk.Frame):
 		top.rowconfigure(0, weight=1)
 		top.columnconfigure(0, weight=1)
 		top.config(borderwidth=10)
+		top.config(background=config['COLOR']['bg'])
 		
 		self.columnconfigure(1, weight=1)
+		self.config(background=config['COLOR']['bg'])
 		
 		self.user_lbl = tk.Label(self, text="Email")
 		self.user_lbl.grid(column=0, row=0, sticky=tk.W+tk.E)
+		self.user_lbl.config(foreground=config['COLOR']['fg'], background=config['COLOR']['bg'])
 		
 		self.user = tk.Entry(self, width=35)
 		self.user_var = tk.StringVar()
 		self.user["textvariable"] = self.user_var
 		self.user.grid(column=1, row=0, columnspan=2, sticky=tk.W+tk.E)
+		self.user.config(foreground=config['COLOR']['fg'], background=config['COLOR']['bg'])
 		
 		self.pwd_lbl = tk.Label(self, text="Password")
 		self.pwd_lbl.grid(column=0, row=1)
+		self.pwd_lbl.config(foreground=config['COLOR']['fg'], background=config['COLOR']['bg'])
 		
 		self.pwd = tk.Entry(self, show="*")
 		self.pwd_var = tk.StringVar()
 		self.pwd["textvariable"] = self.pwd_var
 		self.pwd.grid(column=1, row=1, columnspan=2, sticky=tk.W+tk.E)
+		self.pwd.config(foreground=config['COLOR']['fg'], background=config['COLOR']['bg'])
 		
 		self.err_msg = tk.Label(self)
 		self.err_msg.grid(column=0, row=2, columnspan=3)
+		self.err_msg.config(foreground=config['COLOR']['fg'], background=config['COLOR']['bg'])
 		
-		self.login = tk.Button(self, text="Configure", command=ConfigWindow)
-		self.login.grid(column=0, row=3, sticky=tk.W)
+		self.config_btn = tk.Button(self, text="Configure", command=ConfigWindow)
+		self.config_btn.grid(column=0, row=3, sticky=tk.W)
+		self.config_btn.config(foreground=config['COLOR']['fg'], background=config['COLOR']['bg'])
 		
 		self.login = tk.Button(self, text="Sign in", command=self.sign_in)
 		self.login.grid(column=1, row=3, sticky=tk.E)
+		self.login.config(foreground=config['COLOR']['fg'], background=config['COLOR']['bg'])
 		
 		self.QUIT = tk.Button(self, text="Quit", command=self.master.destroy)
 		self.QUIT.grid(column=2, row=3, sticky=tk.W+tk.E)
+		self.QUIT.config(foreground=config['COLOR']['fg'], background=config['COLOR']['bg'])
 	def sign_in(self):
 		global disp
 		disp = config['MAIN']['displacement']
@@ -100,9 +110,12 @@ class ConfigWindow(tk.Frame):
 		top.rowconfigure(0, weight=1)
 		top.columnconfigure(0, weight=1)
 		top.config(borderwidth=10)
+		top.config(background=config['COLOR']['bg'])
+		self.config(background=config['COLOR']['bg'])
 		
-		disp_lbl = tk.Label(self.wind, text="Username indent")
+		disp_lbl = tk.Label(self.wind, text="Username Indent")
 		disp_lbl.grid(column=2, row=0, sticky=tk.W)
+		disp_lbl.config(foreground=config['COLOR']['fg'], background=config['COLOR']['bg'])
 		
 		disp_box = tk.Entry(self.wind)
 		self.disp_var = tk.StringVar()
@@ -110,9 +123,11 @@ class ConfigWindow(tk.Frame):
 		disp_box.config(width=10,)
 		disp_box.grid(column=0, row=0, sticky=tk.W)
 		disp_box.insert(tk.END, config['MAIN']['displacement'])
+		disp_box.config(foreground=config['COLOR']['fg'], background=config['COLOR']['bg'])
 
 		user_admin_lbl = tk.Label(self.wind, text="Admin Color")
 		user_admin_lbl.grid(column=2, row=1, sticky=tk.W)
+		user_admin_lbl.config(foreground=config['COLOR']['fg'], background=config['COLOR']['bg'])
 		
 		disp_box = tk.Entry(self.wind)
 		self.admin_color_var = tk.StringVar()
@@ -120,9 +135,11 @@ class ConfigWindow(tk.Frame):
 		disp_box.config(width=10,)
 		disp_box.grid(column=0, row=1, sticky=tk.W)
 		disp_box.insert(tk.END, config['COLOR']['admin'])
+		disp_box.config(foreground=config['COLOR']['fg'], background=config['COLOR']['bg'])
 		
-		user_admin_lbl = tk.Label(self.wind, text="Mod Color")
-		user_admin_lbl.grid(column=2, row=2, sticky=tk.W)
+		user_mod_lbl = tk.Label(self.wind, text="Mod Color")
+		user_mod_lbl.grid(column=2, row=2, sticky=tk.W)
+		user_mod_lbl.config(foreground=config['COLOR']['fg'], background=config['COLOR']['bg'])
 		
 		disp_box = tk.Entry(self.wind)
 		self.mod_color_var = tk.StringVar()
@@ -130,9 +147,11 @@ class ConfigWindow(tk.Frame):
 		disp_box.config(width=10,)
 		disp_box.grid(column=0, row=2, sticky=tk.W)
 		disp_box.insert(tk.END, config['COLOR']['mod'])
+		disp_box.config(foreground=config['COLOR']['fg'], background=config['COLOR']['bg'])
 		
-		user_admin_lbl = tk.Label(self.wind, text="Your Color")
-		user_admin_lbl.grid(column=2, row=3, sticky=tk.W)
+		user_op_lbl = tk.Label(self.wind, text="Your Color")
+		user_op_lbl.grid(column=2, row=3, sticky=tk.W)
+		user_op_lbl.config(foreground=config['COLOR']['fg'], background=config['COLOR']['bg'])
 		
 		disp_box = tk.Entry(self.wind)
 		self.op_color_var = tk.StringVar()
@@ -140,15 +159,43 @@ class ConfigWindow(tk.Frame):
 		disp_box.config(width=10,)
 		disp_box.grid(column=0, row=3, sticky=tk.W)
 		disp_box.insert(tk.END, config['COLOR']['op'])
+		disp_box.config(foreground=config['COLOR']['fg'], background=config['COLOR']['bg'])
+		
+		user_fg_lbl = tk.Label(self.wind, text="Text Color")
+		user_fg_lbl.grid(column=2, row=4, sticky=tk.W)
+		user_fg_lbl.config(foreground=config['COLOR']['fg'], background=config['COLOR']['bg'])
+		
+		disp_box = tk.Entry(self.wind)
+		self.fg_color_var = tk.StringVar()
+		disp_box["textvariable"] = self.fg_color_var
+		disp_box.config(width=10,)
+		disp_box.grid(column=0, row=4, sticky=tk.W)
+		disp_box.insert(tk.END, config['COLOR']['fg'])
+		disp_box.config(foreground=config['COLOR']['fg'], background=config['COLOR']['bg'])
+		
+		user_bg_lbl = tk.Label(self.wind, text="Background Color")
+		user_bg_lbl.grid(column=2, row=5, sticky=tk.W)
+		user_bg_lbl.config(foreground=config['COLOR']['fg'], background=config['COLOR']['bg'])
+		
+		disp_box = tk.Entry(self.wind)
+		self.bg_color_var = tk.StringVar()
+		disp_box["textvariable"] = self.bg_color_var
+		disp_box.config(width=10,)
+		disp_box.grid(column=0, row=5, sticky=tk.W)
+		disp_box.insert(tk.END, config['COLOR']['bg'])
+		disp_box.config(foreground=config['COLOR']['fg'], background=config['COLOR']['bg'])
 		
 		
 		save = tk.Button(self.wind, text="Save", command=self.save)
-		save.grid(column=0, row=4, sticky=tk.W)
+		save.grid(column=0, row=6, sticky=tk.W)
+		save.config(foreground=config['COLOR']['fg'], background=config['COLOR']['bg'])
 	def save(self):
 		config['MAIN']['displacement'] = self.disp_var.get()
 		config['COLOR']['admin'] = self.admin_color_var.get()
 		config['COLOR']['mod'] = self.mod_color_var.get()
 		config['COLOR']['op'] = self.op_color_var.get()
+		config['COLOR']['fg'] = self.fg_color_var.get()
+		config['COLOR']['bg'] = self.bg_color_var.get()
 		with open('config.ini', 'w') as configfile:
 			config.write(configfile)
 		self.wind.destroy()
@@ -175,37 +222,45 @@ class FiniyPyMain(tk.Frame):
 		top.rowconfigure(0, weight=1)
 		top.columnconfigure(0, weight=1)
 		top.config(borderwidth=10)
+		top.config(background=config['COLOR']['bg'])
 		
 		self.rowconfigure(3, weight=1)
 		self.columnconfigure(0, weight=1)
 		self.columnconfigure(1, weight=2)
 		self.columnconfigure(2, weight=1)
 		self.columnconfigure(3, weight=1)
+		self.config(background=config['COLOR']['bg'])
 		
 		self.user_info = tk.Label(self)
 		self.user_info_var = tk.StringVar()
 		self.user_info["textvariable"] = self.user_info_var
 		self.user_info_var.set("@"+self.conn.user_data["user"]["username"])
 		self.user_info.grid(column=0, row=1, columnspan=4)
+		self.user_info.config(foreground=config['COLOR']['fg'], background=config['COLOR']['bg'])
 		
 		self.join_lbl = tk.Label(self, text="Join a Chat")
 		self.join_lbl.grid(column=0, row=1)
+		self.join_lbl.config(foreground=config['COLOR']['fg'], background=config['COLOR']['bg'])
 		
 		self.join = tk.Entry(self)
 		self.join_var = tk.StringVar()
 		self.join["textvariable"] = self.join_var
 		self.join.bind("<Key-Return>", self.join_room)
 		self.join.grid(column=0, row=2)
+		self.join.config(foreground=config['COLOR']['fg'], background=config['COLOR']['bg'])
 		
 		self.channel_list = tk.Listbox(self)
 		self.channel_list.grid(column=0, row=3, sticky=tk.N+tk.S)
 		self.channel_list.configure(exportselection=False)
+		self.channel_list.config(foreground=config['COLOR']['fg'], background=config['COLOR']['bg'])
 		
 		self.leave = tk.Button(self, text="Leave", command=self.leave_room)
 		self.leave.grid(column=0, row=4, sticky=tk.E+tk.W)
+		self.leave.config(foreground=config['COLOR']['fg'], background=config['COLOR']['bg'])
 		
 		self.message_area = tk.Text(self, wrap='word', height=28, width=80)
 		self.message_area.grid(column=1, row=3, columnspan=2, sticky=tk.N+tk.S+tk.E+tk.W)
+		self.message_area.config(foreground=config['COLOR']['fg'], background=config['COLOR']['bg'])
 		self.message_area.tag_configure('normal', font=('Courier', 10,))
 		self.message_area.tag_configure('italics', font=('Courier', 10, 'italic',))
 		self.message_area.tag_configure('bold', font=('Courier', 10, 'bold',))
@@ -228,24 +283,29 @@ class FiniyPyMain(tk.Frame):
 		self.message_area.tag_bind("spoiler-visible", "<Leave>", self._leave_spoiler)
 		self.message_area.config(state=tk.DISABLED)
 		
-		self.join_lbl = tk.Label(self, text="Users")
-		self.join_lbl.grid(column=3, row=1)
+		self.users_lbl = tk.Label(self, text="Users")
+		self.users_lbl.grid(column=3, row=1)
+		self.users_lbl.config(foreground=config['COLOR']['fg'], background=config['COLOR']['bg'])
 		
 		self.user_list = tk.Listbox(self)
 		self.user_list.grid(column=3, row=3, sticky=tk.N+tk.S)
 		self.user_list.configure(exportselection=False)
+		self.user_list.config(foreground=config['COLOR']['fg'], background=config['COLOR']['bg'])
 		
 		self.message = tk.Entry(self)
 		self.message_var = tk.StringVar()
 		self.message["textvariable"] = self.message_var
 		self.message.bind("<Key-Return>", self.send_message)
 		self.message.grid(column=1, row=4, sticky=tk.N+tk.S+tk.E+tk.W)
+		self.message.config(foreground=config['COLOR']['fg'], background=config['COLOR']['bg'])
 		
 		self.send = tk.Button(self, text="Send", command=self.send_message)
 		self.send.grid(column=2, row=4, sticky=tk.E+tk.W)
+		self.send.config(foreground=config['COLOR']['fg'], background=config['COLOR']['bg'])
 		
 		self.mention = tk.Button(self, text="Mention", command=self.mention_user)
 		self.mention.grid(column=3, row=4, sticky=tk.E+tk.W)
+		self.mention.config(foreground=config['COLOR']['fg'], background=config['COLOR']['bg'])
 		
 		self.after(0, self.poll)
 	def get_notifications(self):
@@ -744,12 +804,20 @@ class FinitApp:
 	def initconfig(self):
 		if os.path.isfile('config.ini') is False:
 			config['MAIN'] = {'displacement': 0}
-			config['COLOR'] = {'admin': 'red', 'mod': 'blue', 'op': 'lime green'}
+			config['COLOR'] = {'admin': 'red', 'mod': 'blue', 'op': 'lime green',
+				'fg': 'black', 'bg': 'white'}
 			with open('config.ini', 'w') as configfile:
 				config.write(configfile)
 		config.read('config.ini')
+		changed = False
+		if not 'MAIN' in config:
+			config['MAIN'] = {'displacement': 0}
+			changed = True
 		if not 'COLOR' in config:
-			config['COLOR'] = {'admin': 'red', 'mod': 'blue', 'op': 'lime green'}
+			config['COLOR'] = {'admin': 'red', 'mod': 'blue', 'op': 'lime green',
+				'fg': 'black', 'bg': 'white'}
+			changed = True
+		if changed == True:
 			with open('config.ini', 'w') as configfile:
 				config.write(configfile)
 	def on_login(self, email, pwd):
