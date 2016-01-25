@@ -98,7 +98,6 @@ class FinitPyLogin(tk.Frame):
 	def set_error(self, message):
 		self.err_msg["text"] = message
 
-
 class ConfigWindow(tk.Frame):
 	def __init__(self, master=None):
 		tk.Frame.__init__(self, master)
@@ -212,9 +211,6 @@ class ConfigWindow(tk.Frame):
 		with open('config.ini', 'w') as configfile:
 			config.write(configfile)
 		self.wind.destroy()
-		
-		
-		
 
 class FiniyPyMain(tk.Frame):
 	def __init__(self, master=None, conn=None):
@@ -483,6 +479,7 @@ class FiniyPyMain(tk.Frame):
 				"unread": 0}
 		self.conn.join(name)
 	def on_message(self, conn, data):
+		# looks for API events
 		try:
 			if data["event"] == "subscribed":
 				name = self.conn.get_channel_name(data["channel"])
@@ -775,6 +772,7 @@ class FiniyPyMain(tk.Frame):
 		r = self.active_channel
 		if len(r) == 0: return
 		if refresh == True:
+			self.chatlog_add_message(self.rooms[r]["messages"][-1])
 			scroll = False
 			self.message_area.update_idletasks()
 			if self.message_area.bbox(str(int(self.message_area.index("end").split(".")[0])-1)+".0"):
@@ -805,6 +803,22 @@ class FiniyPyMain(tk.Frame):
 				self._add_message(m)
 			self.message_area.see(tk.END)
 			self.message_area.config(state=tk.DISABLED)
+
+	def chatlog_add_message(self, messages):
+		self.message = '{} @{}: {}'.format(messages['created_at'], messages['sender']['username'], messages['body'])
+		self.path = os.path.join('logs', messages['channel']+'.txt')
+		if os.path.isdir('logs') is False:
+			os.mkdir('logs')
+		if os.path.isfile(self.path):
+			with open(self.path, 'r+') as logfile:
+				self.current = logfile.read()
+				logfile.seek(0)
+				logfile.write(self.current+'\n'+self.message)
+				logfile.truncate()
+		else:
+			with open(self.path, 'x') as logfile:
+				logfile.write(self.message)
+		logfile.close()
 
 class FinitApp:
 	def __init__(self):
