@@ -598,7 +598,7 @@ class FiniyPyMain(tk.Frame):
 				self.rooms[channel]["members"].remove(u)
 				if channel == self.active_channel:
 					self.refresh_members()
-			else:
+			elif data["event"] not in ["client-connected", "client-disconnected"]:
 				print(data)
 		except Exception:
 			traceback.print_exc()
