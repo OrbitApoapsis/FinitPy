@@ -38,6 +38,9 @@ def convert65536back(s):
 	s=re.sub(r"ᗍ(\d\d\d\d\d+)ūᗍ", r"{\1ū}", s);
 	return s;
 
+def local2utc(local):
+	return datetime.utcfromtimestamp(time.mktime(local.timetuple()))
+
 class FinitPyLogin(tk.Frame):
 	def __init__(self, master=None, on_login=None):
 		tk.Frame.__init__(self, master)
@@ -429,6 +432,8 @@ class FiniyPyMain(tk.Frame):
 			r = self.channel_list.get(tk.ACTIVE)
 			self.conn.message(r, msg)
 			time = datetime.now()
+			self.chatlog_add_message(r, local2utc(time).isoformat(),
+				self.conn.get_current_user()[1], msg)
 			time = ("00"+str(time.hour))[-2:] + ":" + ("00"+str(time.minute))[-2:]
 			self.rooms[r]["messages"].append({
 				"created_at": time,
@@ -542,6 +547,8 @@ class FiniyPyMain(tk.Frame):
 				self.update_title()
 				data = data["data"].copy()
 				time = datetime.now()
+				self.chatlog_add_message(channel, local2utc(time).isoformat(),
+					data["sender"]["username"], data["body"])
 				data["created_at"] = ("00"+str(time.hour))[-2:] + ":" + ("00"+str(time.minute))[-2:]
 				self.rooms[channel]["messages"].append(data)
 				if len(self.rooms[channel]["messages"]) > 100:
@@ -595,7 +602,7 @@ class FiniyPyMain(tk.Frame):
 				self.rooms[channel]["members"].remove(u)
 				if channel == self.active_channel:
 					self.refresh_members()
-			elif data["event"] not in ["client-connected", "client-disconnected"]:
+			elif data["event"] not in ["connected", "client-connected", "client-disconnected"]:
 				print(data)
 		except Exception:
 			traceback.print_exc()
@@ -772,7 +779,6 @@ class FiniyPyMain(tk.Frame):
 		r = self.active_channel
 		if len(r) == 0: return
 		if refresh == True:
-			self.chatlog_add_message(self.rooms[r]["messages"][-1])
 			scroll = False
 			self.message_area.update_idletasks()
 			if self.message_area.bbox(str(int(self.message_area.index("end").split(".")[0])-1)+".0"):
@@ -803,22 +809,16 @@ class FiniyPyMain(tk.Frame):
 				self._add_message(m)
 			self.message_area.see(tk.END)
 			self.message_area.config(state=tk.DISABLED)
-
-	def chatlog_add_message(self, messages):
-		self.message = '{} @{}: {}'.format(messages['created_at'], messages['sender']['username'], messages['body'])
-		self.path = os.path.join('logs', messages['channel']+'.txt')
-		if os.path.isdir('logs') is False:
-			os.mkdir('logs')
-		if os.path.isfile(self.path):
-			with open(self.path, 'r+') as logfile:
-				self.current = logfile.read()
-				logfile.seek(0)
-				logfile.write(self.current+'\n'+self.message)
-				logfile.truncate()
-		else:
-			with open(self.path, 'x') as logfile:
-				logfile.write(self.message)
-		logfile.close()
+	def chatlog_add_message(self, channel, timestamp, user, msg_text):
+		try:
+			channel = channel.replace("@","prv_{}_".format(self.conn.get_current_user()[1])).replace("#","pub_")
+			path = os.path.join('logs', channel+'.txt')
+			if os.path.isdir('logs') is False:
+				os.mkdir('logs')
+			with open(path, 'a+') as logfile:
+				logfile.write("{} @{}: {}\n".format(timestamp, user, msg_text))
+		except Exception:
+			traceback.print_exc()
 
 class FinitApp:
 	def __init__(self):
