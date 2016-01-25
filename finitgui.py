@@ -488,6 +488,8 @@ class FiniyPyMain(tk.Frame):
 		try:
 			if data["event"] == "subscribed":
 				name = self.conn.get_channel_name(data["channel"])
+				self.time = local2utc(datetime.now()).isoformat()
+				self.chatlog_add_message(name, self.time, self.conn.user_data["user"]["username"], None, "subscribed")
 				if name in self.rooms and not self.rooms[name]["loaded"]:
 					idx = -1
 					for i in range(self.channel_list.size()):
@@ -522,8 +524,12 @@ class FiniyPyMain(tk.Frame):
 				else:
 					self.join_var.set("Failed to subscribe")
 			elif data["event"] == "kicked-from-channel":
+				self.time = local2utc(datetime.now()).isoformat()
+				self.chatlog_add_message(data["channel"], self.time, None, None, "kicked")
 				self.conn.leave(self.conn.get_channel_name(data["channel"]))
 			elif data["event"] == "banned-from-channel":
+				self.time = local2utc(datetime.now()).isoformat()
+				self.chatlog_add_message(data["channel"], self.time, None, None, "banned")
 				self.conn.leave(self.conn.get_channel_name(data["channel"]))
 			elif data["event"] == "unsubscribed":
 				f = None
@@ -531,6 +537,8 @@ class FiniyPyMain(tk.Frame):
 					if self.rooms[k]["channel_name"] == data["channel"]:
 						f = k
 						break
+				self.time = local2utc(datetime.now()).isoformat()
+				self.chatlog_add_message(data["channel"], self.time, self.conn.user_data["user"]["username"], None, "unsubscribed")
 				if f is None: return
 				for i in range(self.channel_list.size()):
 					if self.get_channel_from_list_name(self.channel_list.get(i)) == k:
@@ -591,11 +599,15 @@ class FiniyPyMain(tk.Frame):
 				self.new_pm = True
 				self.update_title()
 			elif data["event"] == "member-added":
+				self.time = local2utc(datetime.now()).isoformat()
+				self.chatlog_add_message(data["channel"], self.time, data["data"]["sender"]["username"], None, "connected")
 				channel = self.conn.get_channel_name(data["channel"])
 				self.rooms[channel]["members"].append(data["data"])
 				if channel == self.active_channel:
 					self.refresh_members()
 			elif data["event"] == "member-removed":
+				self.time = local2utc(datetime.now()).isoformat()
+				self.chatlog_add_message(data["channel"], self.time, data["data"]["sender"]["username"], None, "disconnected")
 				channel = self.conn.get_channel_name(data["channel"])
 				u = None
 				for m in self.rooms[channel]["members"]:
@@ -813,14 +825,20 @@ class FiniyPyMain(tk.Frame):
 				self._add_message(m)
 			self.message_area.see(tk.END)
 			self.message_area.config(state=tk.DISABLED)
-	def chatlog_add_message(self, channel, timestamp, user, msg_text):
+	def chatlog_add_message(self, channel, timestamp, user, msg_text, event=None):
 		try:
 			channel = channel.replace("@","prv_{}_".format(self.conn.get_current_user()[1])).replace("#","pub_")
 			path = os.path.join('logs', channel+'.txt')
 			if os.path.isdir('logs') is False:
 				os.mkdir('logs')
+			if event in ("disconnected", "connected", "unsubscribed", "subscribed"):
+				log = "{} @{} has {}\n".format(timestamp, user, event)
+			elif event in ("kicked", "banned"):
+				log = "{} You have been {}".format(timestamp, user, event)
+			else:
+				log = "{} @{}: {}\n".format(timestamp, user, msg_text)
 			with open(path, 'a+') as logfile:
-				logfile.write("{} @{}: {}\n".format(timestamp, user, msg_text))
+				logfile.write(log)
 		except Exception:
 			traceback.print_exc()
 
