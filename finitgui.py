@@ -819,7 +819,6 @@ class FinitApp:
 		extend(config['MAIN'], default_options)
 		if not 'COLOR' in config: config['COLOR'] = {}
 		extend(config['COLOR'], default_colors)
-		
 		with open('config.ini', 'w') as configfile:
 			config.write(configfile)
 	def on_login(self, email, pwd):
