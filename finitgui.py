@@ -768,7 +768,7 @@ class FiniyPyMain(tk.Frame):
 			me_start = line+"."+str(len(displaced+"{} * @"+m["sender"]["username"]+" "))
 			self._generate_links(body[3:])
 			self.message_area.insert(tk.END, "\n")
-			self.message_area.tag_add("italics", line+".0", line+".end")
+			self.message_area.tag_add("italics", me_start, line+".end")
 			self.message_area.tag_add("normal", line+".0", line+".end")
 		elif re.match("^/spoiler\s", body, re.I):
 			user_style = (user_type, "bold", "user-@"+m["sender"]["username"])
