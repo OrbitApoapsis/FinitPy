@@ -1,5 +1,7 @@
 # Ignore config files
 *.ini
+# Ignore logs
+logs/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

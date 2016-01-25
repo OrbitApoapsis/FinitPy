@@ -38,6 +38,9 @@ def convert65536back(s):
 	s=re.sub(r"ᗍ(\d\d\d\d\d+)ūᗍ", r"{\1ū}", s);
 	return s;
 
+def local2utc(local):
+	return datetime.utcfromtimestamp(time.mktime(local.timetuple()))
+
 class FinitPyLogin(tk.Frame):
 	def __init__(self, master=None, on_login=None):
 		tk.Frame.__init__(self, master)
@@ -255,11 +258,11 @@ class FiniyPyMain(tk.Frame):
 		self.join_var = tk.StringVar()
 		self.join["textvariable"] = self.join_var
 		self.join.bind("<Key-Return>", self.join_room)
-		self.join.grid(column=0, row=2)
+		self.join.grid(column=0, row=2, sticky=tk.E+tk.W)
 		self.join.config(foreground=config['COLOR']['fg'], background=config['COLOR']['bg'])
 		
 		self.channel_list = tk.Listbox(self)
-		self.channel_list.grid(column=0, row=3, sticky=tk.N+tk.S)
+		self.channel_list.grid(column=0, row=3, sticky=tk.N+tk.S+tk.E+tk.W)
 		self.channel_list.configure(exportselection=False)
 		self.channel_list.config(foreground=config['COLOR']['fg'], background=config['COLOR']['bg'])
 		
@@ -286,8 +289,8 @@ class FiniyPyMain(tk.Frame):
 		self.message_area.tag_bind("hyper", "<Enter>", self._enter_link)
 		self.message_area.tag_bind("hyper", "<Leave>", self._leave_link)
 		self.message_area.tag_bind("hyper", "<Button-1>", self._click_link)
-		self.message_area.tag_config("spoiler", font=('Courier', 10,), foreground='black', background='black')
-		self.message_area.tag_config("spoiler-visible", font=('Courier', 10,), foreground='white', background='black')
+		self.message_area.tag_config("spoiler", font=('Courier', 10,), foreground=config['COLOR']['fg'], background=config['COLOR']['fg'])
+		self.message_area.tag_config("spoiler-visible", font=('Courier', 10,), foreground=config['COLOR']['bg'], background=config['COLOR']['fg'])
 		self.message_area.tag_bind("spoiler", "<Enter>", self._enter_spoiler)
 		self.message_area.tag_bind("spoiler-visible", "<Leave>", self._leave_spoiler)
 		self.message_area.config(state=tk.DISABLED)
@@ -297,7 +300,7 @@ class FiniyPyMain(tk.Frame):
 		self.users_lbl.config(foreground=config['COLOR']['fg'], background=config['COLOR']['bg'])
 		
 		self.user_list = tk.Listbox(self)
-		self.user_list.grid(column=3, row=3, sticky=tk.N+tk.S)
+		self.user_list.grid(column=3, row=3, sticky=tk.N+tk.S+tk.E+tk.W)
 		self.user_list.configure(exportselection=False)
 		self.user_list.config(foreground=config['COLOR']['fg'], background=config['COLOR']['bg'])
 		
@@ -429,6 +432,8 @@ class FiniyPyMain(tk.Frame):
 			r = self.channel_list.get(tk.ACTIVE)
 			self.conn.message(r, msg)
 			time = datetime.now()
+			self.chatlog_add_message(r, local2utc(time).isoformat(),
+				self.conn.get_current_user()[1], msg)
 			time = ("00"+str(time.hour))[-2:] + ":" + ("00"+str(time.minute))[-2:]
 			self.rooms[r]["messages"].append({
 				"created_at": time,
@@ -516,6 +521,10 @@ class FiniyPyMain(tk.Frame):
 					self.join_var.set("You are banned from "+self.conn.get_channel_name(data["channel"]))
 				else:
 					self.join_var.set("Failed to subscribe")
+			elif data["event"] == "kicked-from-channel":
+				self.conn.leave(self.conn.get_channel_name(data["channel"]))
+			elif data["event"] == "banned-from-channel":
+				self.conn.leave(self.conn.get_channel_name(data["channel"]))
 			elif data["event"] == "unsubscribed":
 				f = None
 				for k in self.rooms:
@@ -542,6 +551,8 @@ class FiniyPyMain(tk.Frame):
 				self.update_title()
 				data = data["data"].copy()
 				time = datetime.now()
+				self.chatlog_add_message(channel, local2utc(time).isoformat(),
+					data["sender"]["username"], data["body"])
 				data["created_at"] = ("00"+str(time.hour))[-2:] + ":" + ("00"+str(time.minute))[-2:]
 				self.rooms[channel]["messages"].append(data)
 				if len(self.rooms[channel]["messages"]) > 100:
@@ -595,7 +606,7 @@ class FiniyPyMain(tk.Frame):
 				self.rooms[channel]["members"].remove(u)
 				if channel == self.active_channel:
 					self.refresh_members()
-			elif data["event"] not in ["client-connected", "client-disconnected"]:
+			elif data["event"] not in ["connected", "client-connected", "client-disconnected"]:
 				print(data)
 		except Exception:
 			traceback.print_exc()
@@ -772,7 +783,6 @@ class FiniyPyMain(tk.Frame):
 		r = self.active_channel
 		if len(r) == 0: return
 		if refresh == True:
-			self.chatlog_add_message(self.rooms[r]["messages"][-1])
 			scroll = False
 			self.message_area.update_idletasks()
 			if self.message_area.bbox(str(int(self.message_area.index("end").split(".")[0])-1)+".0"):
@@ -803,22 +813,16 @@ class FiniyPyMain(tk.Frame):
 				self._add_message(m)
 			self.message_area.see(tk.END)
 			self.message_area.config(state=tk.DISABLED)
-
-	def chatlog_add_message(self, messages):
-		self.message = '{} @{}: {}'.format(messages['created_at'], messages['sender']['username'], messages['body'])
-		self.path = os.path.join('logs', messages['channel']+'.txt')
-		if os.path.isdir('logs') is False:
-			os.mkdir('logs')
-		if os.path.isfile(self.path):
-			with open(self.path, 'r+') as logfile:
-				self.current = logfile.read()
-				logfile.seek(0)
-				logfile.write(self.current+'\n'+self.message)
-				logfile.truncate()
-		else:
-			with open(self.path, 'x') as logfile:
-				logfile.write(self.message)
-		logfile.close()
+	def chatlog_add_message(self, channel, timestamp, user, msg_text):
+		try:
+			channel = channel.replace("@","prv_{}_".format(self.conn.get_current_user()[1])).replace("#","pub_")
+			path = os.path.join('logs', channel+'.txt')
+			if os.path.isdir('logs') is False:
+				os.mkdir('logs')
+			with open(path, 'a+') as logfile:
+				logfile.write("{} @{}: {}\n".format(timestamp, user, msg_text))
+		except Exception:
+			traceback.print_exc()
 
 class FinitApp:
 	def __init__(self):
