@@ -679,23 +679,26 @@ class FiniyPyMain(tk.Frame):
 			self.channel_list.selection_set(idx)
 			self.channel_list.activate(idx)
 	def update_title(self):
-		if self.focus_displayof() is None:
-			pm = "* " if self.new_pm else ""
-			if config["MAIN"]["username in title"] == "True":
-				user = self.conn.user_data["user"]["username"]
-				if self.new_msg_count > 0:
-					self.master.title("{}FinitPy - @{} ({})".format(pm, user, self.new_msg_count))
+		try:
+			if self.focus_displayof() is None:
+				pm = "* " if self.new_pm else ""
+				if config["MAIN"]["username in title"] == "True":
+					user = self.conn.user_data["user"]["username"]
+					if self.new_msg_count > 0:
+						self.master.title("{}FinitPy - @{} ({})".format(pm, user, self.new_msg_count))
+					else:
+						self.master.title("{}FinitPy - @{}".format(pm, user))
 				else:
-					self.master.title("{}FinitPy - @{}".format(pm, user))
+					if self.new_msg_count > 0:
+						self.master.title("{}FinitPy - ({})".format(pm, self.new_msg_count))
+					else:
+						self.master.title("{}FinitPy".format(pm))
+			elif config["MAIN"]["username in title"] == "True":
+				self.master.title("FinitPy - {}".format(self.conn.user_data["user"]["username"]))
 			else:
-				if self.new_msg_count > 0:
-					self.master.title("{}FinitPy - ({})".format(pm, self.new_msg_count))
-				else:
-					self.master.title("{}FinitPy".format(pm))
-		elif config["MAIN"]["username in title"] == "True":
-			self.master.title("FinitPy - {}".format(self.conn.user_data["user"]["username"]))
-		else:
-			self.master.title("FinitPy")
+				self.master.title("FinitPy")
+		except:
+			pass
 	def refresh_lists(self):
 		if len(self.active_channel) > 0:
 			self.user_info_var.set("@"+self.conn.user_data["user"]["username"]+" - "+self.active_channel)
