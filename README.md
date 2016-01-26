@@ -20,6 +20,8 @@ Thanks to [@robsob91](https://github.com/robsob91) and [@OrbitApoapsis](https://
 
 ![FinitPy](https://i.sli.mg/04m2GW.png)
 
+![Info window](https://i.sli.mg/M6qi6R.png)
+
 **Old screenshots:**
 
 ![FinitPy](https://i.sli.mg/uS2rJ7.png)
