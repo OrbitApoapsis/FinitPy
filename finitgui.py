@@ -446,9 +446,9 @@ class FiniyPyMain(tk.Frame):
 		))
 		self.message.focus_set()
 	def get_whois(self):
+		if self.user_list.size() == 0: return
 		try:
-			index = self.user_list.curselection()[0]
-			data = self.conn.get_user_info(self.user_list.get(index))
+			data = self.conn.get_user_info(self.user_list.get(tk.ACTIVE))
 			uid = data["data"]["id"]
 			username = data["data"]["username"]
 			#name = data["data"]["full_name"]
