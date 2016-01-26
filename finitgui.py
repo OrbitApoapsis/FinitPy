@@ -451,7 +451,7 @@ class FiniyPyMain(tk.Frame):
 			data = self.conn.get_user_info(self.user_list.get(tk.ACTIVE))
 			uid = data["data"]["id"]
 			username = data["data"]["username"]
-			account_type = "a guest" if info["data"]["is_temp"] == 1 else "registered"
+			account_type = "a guest" if data["data"]["is_temp"] == 1 else "registered"
 			#name = data["data"]["full_name"]
 			#birthday = data["data"]["dob"]
 			#gender = data["data"]["gender"]
