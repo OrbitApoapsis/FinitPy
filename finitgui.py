@@ -451,6 +451,7 @@ class FiniyPyMain(tk.Frame):
 			data = self.conn.get_user_info(self.user_list.get(tk.ACTIVE))
 			uid = data["data"]["id"]
 			username = data["data"]["username"]
+			account_type = "a guest" if info["data"]["is_temp"] == 1 else "registered"
 			#name = data["data"]["full_name"]
 			#birthday = data["data"]["dob"]
 			#gender = data["data"]["gender"]
@@ -463,7 +464,7 @@ class FiniyPyMain(tk.Frame):
 			else:
 				mod = ", ".join(["#"+re.match("^pub_(.*)",i).group(1) for i in data["data"]["mod_powers"]])
 			#messagebox.showinfo("Info - {}".format(username), "Name: {}\nBirthday: {}\nGender: {}\nWebsite: {}\nBio: {}\nModerates: {}".format(name, birthday, gender, site, bio, mod))
-			messagebox.showinfo("Info - {}".format(username), "User ID: {}\nWebsite: {}\nBio: {}\nModerates: {}".format(uid, site, bio, mod))
+			messagebox.showinfo("Info - {}".format(username), "User ID: {}\nThe account is {}\nWebsite: {}\nBio: {}\nModerates: {}".format(uid, account_type, site, bio, mod))
 		except Exception:
 			traceback.print_exc()
 	def join_room(self, event):
