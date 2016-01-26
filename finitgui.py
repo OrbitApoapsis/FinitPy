@@ -448,12 +448,13 @@ class FiniyPyMain(tk.Frame):
 			data = self.conn.get_user_info(self.user_list.get(index))
 			username = data["data"]["username"]
 			name = data["data"]["full_name"]
-			birthday = data["data"]["dob"]
-			gender = data["data"]["gender"]
+			#birthday = data["data"]["dob"]
+			#gender = data["data"]["gender"]
 			site = data["data"]["website"]
 			bio = data["data"]["bio"]
 			mod = ", ".join(data["data"]["mod_powers"])
-			messagebox.showinfo("Info - {}".format(username), "Name: {}\nBirthday: {}\nGender: {}\nWebsite: {}\nBio: {}\nModerates: {}".format(name, birthday, gender, site, bio, mod))
+			#messagebox.showinfo("Info - {}".format(username), "Name: {}\nBirthday: {}\nGender: {}\nWebsite: {}\nBio: {}\nModerates: {}".format(name, birthday, gender, site, bio, mod))
+			messagebox.showinfo("Info - {}".format(username), "Name: {}\nWebsite: {}\nBio: {}\nModerates: {}".format(name, site, bio, mod))
 		except Exception:
 			traceback.print_exc()
 	def join_room(self, event):
