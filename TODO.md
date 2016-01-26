@@ -1,3 +1,4 @@
+ * Reconnect on socket close
  * Statusbar (kicked, banned, errors)
  * Polls
  * Add support for displaying chat info
