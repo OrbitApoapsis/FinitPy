@@ -488,8 +488,8 @@ class FiniyPyMain(tk.Frame):
 		try:
 			if data["event"] == "subscribed":
 				name = self.conn.get_channel_name(data["channel"])
-				self.time = local2utc(datetime.now()).isoformat()
-				self.chatlog_add_message(name, self.time, self.conn.user_data["user"]["username"], None, "subscribed")
+				time = local2utc(datetime.now()).isoformat()
+				self.chatlog_add_message(name, time, self.conn.user_data["user"]["username"], None, "subscribed")
 				if name in self.rooms and not self.rooms[name]["loaded"]:
 					idx = -1
 					for i in range(self.channel_list.size()):
@@ -524,12 +524,12 @@ class FiniyPyMain(tk.Frame):
 				else:
 					self.join_var.set("Failed to subscribe")
 			elif data["event"] == "kicked-from-channel":
-				self.time = local2utc(datetime.now()).isoformat()
-				self.chatlog_add_message(data["channel"], self.time, None, None, "kicked")
+				time = local2utc(datetime.now()).isoformat()
+				self.chatlog_add_message(data["channel"], time, None, None, "kicked")
 				self.conn.leave(self.conn.get_channel_name(data["channel"]))
 			elif data["event"] == "banned-from-channel":
-				self.time = local2utc(datetime.now()).isoformat()
-				self.chatlog_add_message(data["channel"], self.time, None, None, "banned")
+				time = local2utc(datetime.now()).isoformat()
+				self.chatlog_add_message(data["channel"], time, None, None, "banned")
 				self.conn.leave(self.conn.get_channel_name(data["channel"]))
 			elif data["event"] == "unsubscribed":
 				f = None
@@ -537,8 +537,8 @@ class FiniyPyMain(tk.Frame):
 					if self.rooms[k]["channel_name"] == data["channel"]:
 						f = k
 						break
-				self.time = local2utc(datetime.now()).isoformat()
-				self.chatlog_add_message(data["channel"], self.time, self.conn.user_data["user"]["username"], None, "unsubscribed")
+				time = local2utc(datetime.now()).isoformat()
+				self.chatlog_add_message(data["channel"], time, self.conn.user_data["user"]["username"], None, "unsubscribed")
 				if f is None: return
 				for i in range(self.channel_list.size()):
 					if self.get_channel_from_list_name(self.channel_list.get(i)) == k:
@@ -599,15 +599,15 @@ class FiniyPyMain(tk.Frame):
 				self.new_pm = True
 				self.update_title()
 			elif data["event"] == "member-added":
-				self.time = local2utc(datetime.now()).isoformat()
-				self.chatlog_add_message(data["channel"], self.time, data["data"]["sender"]["username"], None, "connected")
+				time = local2utc(datetime.now()).isoformat()
+				self.chatlog_add_message(data["channel"], time, data["data"]["sender"]["username"], None, "connected")
 				channel = self.conn.get_channel_name(data["channel"])
 				self.rooms[channel]["members"].append(data["data"])
 				if channel == self.active_channel:
 					self.refresh_members()
 			elif data["event"] == "member-removed":
-				self.time = local2utc(datetime.now()).isoformat()
-				self.chatlog_add_message(data["channel"], self.time, data["data"]["sender"]["username"], None, "disconnected")
+				time = local2utc(datetime.now()).isoformat()
+				self.chatlog_add_message(data["channel"], time, data["data"]["sender"]["username"], None, "disconnected")
 				channel = self.conn.get_channel_name(data["channel"])
 				u = None
 				for m in self.rooms[channel]["members"]:
