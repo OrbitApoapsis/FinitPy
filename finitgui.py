@@ -243,6 +243,7 @@ class FiniyPyMain(tk.Frame):
 		self.columnconfigure(3, weight=1)
 		self.config(background=config['COLOR']['bg'])
 		
+		# user information
 		self.user_info = tk.Label(self)
 		self.user_info_var = tk.StringVar()
 		self.user_info["textvariable"] = self.user_info_var
@@ -250,6 +251,7 @@ class FiniyPyMain(tk.Frame):
 		self.user_info.grid(column=0, row=1, columnspan=4)
 		self.user_info.config(foreground=config['COLOR']['fg'], background=config['COLOR']['bg'])
 		
+		# channel list
 		self.join_lbl = tk.Label(self, text="Join a Chat")
 		self.join_lbl.grid(column=0, row=1)
 		self.join_lbl.config(foreground=config['COLOR']['fg'], background=config['COLOR']['bg'])
@@ -262,16 +264,17 @@ class FiniyPyMain(tk.Frame):
 		self.join.config(foreground=config['COLOR']['fg'], background=config['COLOR']['bg'])
 		
 		self.channel_list = tk.Listbox(self)
-		self.channel_list.grid(column=0, row=3, sticky=tk.N+tk.S+tk.E+tk.W)
+		self.channel_list.grid(column=0, row=3, rowspan=2, sticky=tk.N+tk.S+tk.E+tk.W)
 		self.channel_list.configure(exportselection=False)
 		self.channel_list.config(foreground=config['COLOR']['fg'], background=config['COLOR']['bg'])
 		
 		self.leave = tk.Button(self, text="Leave", command=self.leave_room)
-		self.leave.grid(column=0, row=4, sticky=tk.E+tk.W)
+		self.leave.grid(column=0, row=5, sticky=tk.E+tk.W)
 		self.leave.config(foreground=config['COLOR']['fg'], background=config['COLOR']['bg'])
 		
+		# chat area
 		self.message_area = tk.Text(self, wrap='word', height=28, width=80)
-		self.message_area.grid(column=1, row=3, columnspan=2, sticky=tk.N+tk.S+tk.E+tk.W)
+		self.message_area.grid(column=1, row=3, rowspan=2, columnspan=2, sticky=tk.N+tk.S+tk.E+tk.W)
 		self.message_area.config(foreground=config['COLOR']['fg'], background=config['COLOR']['bg'])
 		self.message_area.tag_configure('normal', font=('Courier', 10,))
 		self.message_area.tag_configure('italics', font=('Courier', 10, 'italic',))
@@ -295,6 +298,7 @@ class FiniyPyMain(tk.Frame):
 		self.message_area.tag_bind("spoiler-visible", "<Leave>", self._leave_spoiler)
 		self.message_area.config(state=tk.DISABLED)
 		
+		# user list
 		self.users_lbl = tk.Label(self, text="Users")
 		self.users_lbl.grid(column=3, row=1)
 		self.users_lbl.config(foreground=config['COLOR']['fg'], background=config['COLOR']['bg'])
@@ -304,22 +308,29 @@ class FiniyPyMain(tk.Frame):
 		self.user_list.configure(exportselection=False)
 		self.user_list.config(foreground=config['COLOR']['fg'], background=config['COLOR']['bg'])
 		
+		# message sending
 		self.message = tk.Entry(self)
 		self.message_var = tk.StringVar()
 		self.message["textvariable"] = self.message_var
 		self.message.bind("<Key-Return>", self.send_message)
-		self.message.grid(column=1, row=4, sticky=tk.N+tk.S+tk.E+tk.W)
+		self.message.grid(column=1, row=5, sticky=tk.N+tk.S+tk.E+tk.W)
 		self.message.config(foreground=config['COLOR']['fg'], background=config['COLOR']['bg'])
 		
 		self.send = tk.Button(self, text="Send", command=self.send_message)
-		self.send.grid(column=2, row=4, sticky=tk.E+tk.W)
+		self.send.grid(column=2, row=5, sticky=tk.E+tk.W)
 		self.send.config(foreground=config['COLOR']['fg'], background=config['COLOR']['bg'])
 		
+		# user options
+		self.whois = tk.Button(self, text="Info", command=self.get_whois)
+		self.whois.grid(column=3, row=4, sticky=tk.E+tk.W+tk.S)
+		self.whois.config(foreground=config['COLOR']['fg'], background=config['COLOR']['bg'])
+		
 		self.mention = tk.Button(self, text="Mention", command=self.mention_user)
-		self.mention.grid(column=3, row=4, sticky=tk.E+tk.W)
+		self.mention.grid(column=3, row=5, sticky=tk.E+tk.W)
 		self.mention.config(foreground=config['COLOR']['fg'], background=config['COLOR']['bg'])
 		
 		self.after(0, self.poll)
+	
 	def get_notifications(self):
 		notif = self.conn.get_all_notifications()
 		for n in notif:
@@ -419,6 +430,12 @@ class FiniyPyMain(tk.Frame):
 			re.sub("^\\[\\w+\\]\\s+", "", self.user_list.get(tk.ACTIVE))
 		))
 		self.message.focus_set()
+	def get_whois(self):
+		try:
+			index = self.user_list.curselection()[0]
+			data = self.conn.get_user_info(self.user_list.get(index))
+		except Exception:
+			traceback.print_exc()
 	def join_room(self, event):
 		self.finit_join(self.conn.get_normalized_channel_name(self.join_var.get()))
 	def leave_room(self):
@@ -643,10 +660,11 @@ class FiniyPyMain(tk.Frame):
 	def update_title(self):
 		if self.focus_displayof() is None:
 			pm = "* " if self.new_pm else ""
+			self.user = self.conn.user_data["user"]["username"]
 			if self.new_msg_count > 0:
-				self.master.title("{}FinitPy ({})".format(pm, self.new_msg_count))
+				self.master.title("{}FinitPy - {} ({})".format(pm, self.user, self.new_msg_count))
 			else:
-				self.master.title("{}FinitPy".format(pm))
+				self.master.title("{}FinitPy - {}".format(pm, self.user))
 		else:
 			self.master.title("FinitPy")
 	def refresh_lists(self):
@@ -841,7 +859,7 @@ class FiniyPyMain(tk.Frame):
 				logfile.write(log)
 		except Exception:
 			traceback.print_exc()
-
+			
 class FinitApp:
 	def __init__(self):
 		self.initconfig()
