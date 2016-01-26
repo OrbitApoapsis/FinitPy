@@ -2,6 +2,7 @@
 
 import re, time, threading, traceback, webbrowser, os, configparser
 import tkinter as tk
+from tkinter import messagebox
 from datetime import datetime
 from finitclient import FinitClient
 
@@ -445,6 +446,14 @@ class FiniyPyMain(tk.Frame):
 		try:
 			index = self.user_list.curselection()[0]
 			data = self.conn.get_user_info(self.user_list.get(index))
+			username = data["data"]["username"]
+			name = data["data"]["full_name"]
+			birthday = data["data"]["dob"]
+			gender = data["data"]["gender"]
+			site = data["data"]["website"]
+			bio = data["data"]["bio"]
+			mod = ", ".join(data["data"]["mod_powers"])
+			messagebox.showinfo("Info - {}".format(username), "Name: {}\nBirthday: {}\nGender: {}\nWebsite: {}\nBio: {}\nModerates: {}".format(name, birthday, gender, site, bio, mod))
 		except Exception:
 			traceback.print_exc()
 	def join_room(self, event):
