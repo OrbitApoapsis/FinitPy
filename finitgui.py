@@ -431,10 +431,13 @@ class FiniyPyMain(tk.Frame):
 					self.finit_join(sel)
 				else:
 					self.refresh_lists()
-		if self.focus_displayof() is not None and (self.new_msg_count > 0 or self.new_pm):
-			self.new_msg_count = 0
-			self.new_pm = False
-			self.update_title()
+		try:
+			if self.focus_displayof() is not None and (self.new_msg_count > 0 or self.new_pm):
+				self.new_msg_count = 0
+				self.new_pm = False
+				self.update_title()
+		except:
+			pass
 		self.after(250, self.poll)
 	def mention_user(self):
 		if self.user_list.size() == 0: return
@@ -447,14 +450,19 @@ class FiniyPyMain(tk.Frame):
 			index = self.user_list.curselection()[0]
 			data = self.conn.get_user_info(self.user_list.get(index))
 			username = data["data"]["username"]
-			name = data["data"]["full_name"]
+			#name = data["data"]["full_name"]
 			#birthday = data["data"]["dob"]
 			#gender = data["data"]["gender"]
 			site = data["data"]["website"]
 			bio = data["data"]["bio"]
-			mod = ", ".join(data["data"]["mod_powers"])
+			if data["data"]["id"] == 1:
+				mod = "everything, he's the admin"
+			elif len(data["data"]["mod_powers"]) == 0:
+				mod = "nothing"
+			else:
+				mod = ", ".join(["#"+re.match("^pub_(.*)",i).group(1) for i in data["data"]["mod_powers"]])
 			#messagebox.showinfo("Info - {}".format(username), "Name: {}\nBirthday: {}\nGender: {}\nWebsite: {}\nBio: {}\nModerates: {}".format(name, birthday, gender, site, bio, mod))
-			messagebox.showinfo("Info - {}".format(username), "Name: {}\nWebsite: {}\nBio: {}\nModerates: {}".format(name, site, bio, mod))
+			messagebox.showinfo("Info - {}".format(username), "Website: {}\nBio: {}\nModerates: {}".format(site, bio, mod))
 		except Exception:
 			traceback.print_exc()
 	def join_room(self, event):
