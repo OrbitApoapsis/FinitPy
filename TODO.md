@@ -6,3 +6,4 @@
  * Support /ban /unban and /kick
  * Add support for moderator dashboard
  * Friends and boxes (I'm not sure about this one)
+ * Display images inside the client
