@@ -915,7 +915,7 @@ class FinitApp:
 			for k in b:
 				if k not in a:
 					a[k] = b[k]
-		default_options = {'displacement': 0, 'username in title': True, 'email': ''}
+		default_options = {'displacement': 0, 'username in title': 'True', 'email': ''}
 		default_colors = {'admin': 'red', 'mod': 'blue', 'op': 'lime green',
 			'std': 'black', 'fg': 'black', 'bg': 'white'}
 		if os.path.isfile('config.ini') is False:
