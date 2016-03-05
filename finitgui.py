@@ -818,7 +818,10 @@ class FiniyPyMain(tk.Frame):
 					break
 		displacement = int(disp) - len(m["sender"]["username"])
 		displaced = ' ' * displacement
-		body = convert65536(m["body"])
+		if "photo" in m and m["photo"] is not None:
+			body = m["photo"]["url"]
+		else:
+			body = convert65536(m["body"])
 		if re.match("^/me\s", body, re.I):
 			user_style = (user_type, "bold-italics", "user-@"+m["sender"]["username"])
 			line = str(int(self.message_area.index("end").split(".")[0])-1)
