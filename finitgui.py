@@ -607,8 +607,12 @@ class FiniyPyMain(tk.Frame):
 				self.update_title()
 				data = data["data"].copy()
 				time = datetime.now()
-				self.chatlog_add_message(channel, local2utc(time).isoformat(),
-					data["sender"]["username"], data["body"])
+				if "photo" in data and data["photo"] is not None:
+					self.chatlog_add_message(channel, local2utc(time).isoformat(),
+						data["sender"]["username"], data["photo"]["url"])
+				else:
+					self.chatlog_add_message(channel, local2utc(time).isoformat(),
+						data["sender"]["username"], data["body"])
 				data["created_at"] = ("00"+str(time.hour))[-2:] + ":" + ("00"+str(time.minute))[-2:]
 				self.rooms[channel]["messages"].append(data)
 				if len(self.rooms[channel]["messages"]) > 100:
